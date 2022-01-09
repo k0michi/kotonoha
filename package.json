@@ -1,0 +1,25 @@
+{
+  "name": "kotonoha",
+  "productName": "Kotonoha",
+  "dependencies": {
+    "electron": "^16.0.6"
+  },
+  "scripts": {
+    "build": "babel src --out-dir dist && webpack --mode development && cp src/*.html dist && cp src/*.css dist",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.16.7",
+    "@babel/core": "^7.16.7",
+    "@babel/preset-env": "^7.16.7",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.5.1",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.6.0"
+  },
+  "packageManager": "yarn@3.1.1",
+  "main": "dist/main.js"
+}
