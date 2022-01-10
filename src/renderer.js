@@ -39,7 +39,7 @@ function indexView() {
       const content = await bridge.readFile(file);
       const tree = ewl.parse(content);
 
-      const deck = createDeck(id, id, tree.entries);
+      const deck = new Deck(id, id, tree.entries);
       addDeck(deck);
       await saveDeck(deck);
     }
@@ -165,34 +165,42 @@ function addDeck(deck) {
   decks.push(deck);
 }
 
-function createDeck(id, name, entries) {
-  const now = new Date();
+class Deck {
+  constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
+    this.id = id;
+    this.name = name;
+    this.entries = entries;
+    this.createdAt = createdAt;
+    this.attempts = attempts;
+    this.scores = scores;
+  }
 
-  return {
-    id,
-    name,
-    createdAt: now,
-    entries,
-    attempts: [],
-    scores: []
-  };
+  static fromJSON(json) {
+    const parsed = JSON.parse(json);
+    const deck = new Deck(parsed.id, parsed.name, parsed.entries, parsed.createdAt, parsed.attempts, parsed.scores);
+    return deck;
+  }
+
+  toJSON() {
+    const object = { id: this.id, name: this.name, entries: this.entries, createdAt: this.createdAt, attempts: this.attempts, scores: this.scores };
+    return JSON.stringify(object);
+  }
 }
 
 async function loadDeck(file) {
   const id = bridge.path.basename(file, bridge.path.extname(file));
   const content = await bridge.readFile(file);
-  const tree = JSON.parse(content);
-
-  return tree;
+  const deck = Deck.fromJSON(content);
+  return deck;
 }
 
 async function saveDeck(deck) {
-  const deckJSON = JSON.stringify(deck);
+  const json = deck.toJSON();
 
   await bridge.makeDir(config.decksPath);
   await bridge.saveFile(bridge.path.format({
     dir: config.decksPath,
     name: deck.id,
     ext: '.json'
-  }), deckJSON);
+  }), json);
 }
