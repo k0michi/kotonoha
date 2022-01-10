@@ -91,7 +91,7 @@ function practiceView(deck) {
         const grade = parseInt(e.key, 10) - 1;
 
         const now = new Date();
-        deck.attempts.push({ entry: currentIndex, grade, date: now });
+        deck.attempts.push({ entry: currentEntry.word, grade, date: now });
         let score = deck.scores[currentIndex] ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
         score = scheduler.sm2((3 - grade) * (5 / 3), score);
         deck.scores[currentIndex] = score;
@@ -165,6 +165,8 @@ function addDeck(deck) {
   decks.push(deck);
 }
 
+const timestampExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
 class Deck {
   constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
     this.id = id;
@@ -176,7 +178,14 @@ class Deck {
   }
 
   static fromJSON(json) {
-    const parsed = JSON.parse(json);
+    const parsed = JSON.parse(json, (key, value) => {
+      if (typeof value == 'string' && timestampExp.test(value)) {
+        return new Date(value);
+      } else {
+        return value;
+      }
+    });
+
     const deck = new Deck(parsed.id, parsed.name, parsed.entries, parsed.createdAt, parsed.attempts, parsed.scores);
     return deck;
   }
