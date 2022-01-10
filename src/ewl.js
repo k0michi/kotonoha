@@ -7,13 +7,13 @@ export function parse(text) {
   const entries = [];
 
   for (const c of tree.children) {
-    entries.push(parseEntry(c));
+    entries.push(parseEntry(c, true));
   }
 
-  return {entries};
+  return { entries };
 }
 
-function parseEntry(node) {
+function parseEntry(node, parseDerivative) {
   const word = node.value;
   const definitions = [];
   const derivatives = [];
@@ -24,11 +24,17 @@ function parseEntry(node) {
     if (definitionRes != null) {
       const partOfSpeech = definitionRes[1];
       const definition = definitionRes[2];
-      definitions.push({partOfSpeech, definition});
+      definitions.push({ partOfSpeech, definition });
     } else {
-      derivatives.push(parseEntry(c));
+      if (parseDerivative) {
+        derivatives.push(parseEntry(c, false));
+      }
     }
   }
 
-  return {word, definitions, derivatives};
+  if (parseDerivative) {
+    return { word, definitions, derivatives };
+  } else {
+    return { word, definitions };
+  }
 }
