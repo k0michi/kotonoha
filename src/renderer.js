@@ -81,6 +81,11 @@ function practiceView(deck) {
 
   let listener;
   document.addEventListener('keydown', listener = e => {
+    if (e.key == 'Escape') {
+      document.removeEventListener('keydown', listener);
+      indexView();
+    }
+
     if (showingDef) {
       if (e.key >= '1' && e.key <= '4') {
         const grade = parseInt(e.key, 10) - 1;
