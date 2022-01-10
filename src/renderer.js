@@ -126,13 +126,14 @@ function practiceView(deck) {
 
 function headwordView(entry, typed) {
   utils.removeChildNodes(view.headword);
+  const hue = utils.normalizeEnglishWord(entry.word) * 360;
 
   for (let i = 0; i < entry.word.length; i++) {
     const c = entry.word[i];
     const wrapper = document.createElement('span');
 
     if (i < typed) {
-      wrapper.style.color = 'red';
+      wrapper.style.color = `hsl(${hue}, 100%, 50%)`;
     }
 
     if (i == typed) {
