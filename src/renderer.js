@@ -65,9 +65,8 @@ function indexView() {
 function practiceView(deck) {
   utils.removeChildNodes(root);
 
-  const indices = utils.range(0, deck.entries.length);
-  let currentIndex = indices[Math.floor(Math.random() * indices.length)];
-  let currentEntry = deck.entries[currentIndex];
+  const entries = deck.getAllEntries();
+  let currentEntry = entries[utils.random(0, entries.length)];
   let showingDef = false;
   let typed = 0;
 
@@ -80,7 +79,7 @@ function practiceView(deck) {
   definitionListView(currentEntry, false);
 
   let listener;
-  document.addEventListener('keydown', listener = e => {
+  document.addEventListener('keydown', listener = async e => {
     if (e.key == 'Escape') {
       document.removeEventListener('keydown', listener);
       indexView();
@@ -91,20 +90,20 @@ function practiceView(deck) {
         const grade = parseInt(e.key, 10) - 1;
 
         const now = new Date();
-        deck.attempts.push({ entry: currentEntry.word, grade, date: now });
-        let score = deck.scores[currentIndex] ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
-        score = scheduler.sm2((3 - grade) * (5 / 3), score);
-        deck.scores[currentIndex] = score;
-        saveDeck(deck);
+        deck.addAttempt({ word: currentEntry.word, grade, date: now });
 
-        indices.splice(indices.indexOf(currentIndex), 1);
+        const currentScore = deck.getScore(currentEntry.word) ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
+        const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
+        deck.setScore(currentEntry.word, newScore);
 
-        if (indices.length == 0) {
+        await saveDeck(deck);
+        entries.splice(entries.indexOf(currentEntry), 1);
+
+        if (entries.length == 0) {
           document.removeEventListener('keydown', listener);
           indexView();
         } else {
-          currentIndex = indices[Math.floor(Math.random() * indices.length)];
-          currentEntry = deck.entries[currentIndex];
+          currentEntry = entries[utils.random(0, entries.length)];
           typed = 0;
           showingDef = false;
           headwordView(currentEntry, typed);
@@ -168,13 +167,47 @@ function addDeck(deck) {
 const timestampExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 class Deck {
-  constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
+  constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = {}) {
     this.id = id;
     this.name = name;
     this.entries = entries;
     this.createdAt = createdAt;
     this.attempts = attempts;
     this.scores = scores;
+
+    this.entryMap = {};
+
+    for (const e of this.getAllEntries()) {
+      this.entryMap[e.word] = e;
+    }
+  }
+
+  getAllEntries() {
+    const entries = [];
+
+    for (const e of this.entries) {
+      entries.push(e);
+
+      if (e.derivatives != null) {
+        for (const d of e.derivatives) {
+          entries.push(d);
+        }
+      }
+    }
+
+    return entries;
+  }
+
+  getScore(word) {
+    return this.scores[word];
+  }
+
+  setScore(word, score) {
+    this.scores[word] = score;
+  }
+
+  addAttempt(attempt) {
+    this.attempts.push(attempt);
   }
 
   static fromJSON(json) {

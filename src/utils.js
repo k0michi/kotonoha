@@ -7,3 +7,7 @@ export function removeChildNodes(parent) {
 export function range(start, end) {
   return Array.from({ length: end - start }, (e, i) => start + i);
 }
+
+export function random(start, end) {
+  return Math.floor(Math.random() * (end - start)) + start;
+}
