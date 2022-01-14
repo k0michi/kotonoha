@@ -6,6 +6,9 @@
   },
   "scripts": {
     "build": "stencil build --dev && babel src --out-dir dist",
+    "build.main": "babel src --out-dir dist",
+    "build.renderer": "stencil build --dev",
+    "watch.renderer": "stencil build --dev --watch",
     "start": "electron .",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
