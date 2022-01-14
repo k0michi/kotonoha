@@ -5,16 +5,27 @@
     "electron": "^16.0.6"
   },
   "scripts": {
-    "build": "babel src --out-dir dist && webpack --mode development && cp src/*.html dist && cp src/*.css dist",
-    "start": "electron ."
+    "build": "stencil build --dev && babel src --out-dir dist",
+    "start": "electron .",
+    "test": "stencil test --spec --e2e",
+    "test.watch": "stencil test --spec --e2e --watchAll",
+    "generate": "stencil generate"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.7",
     "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.16.7",
+    "@stencil/core": "^2.7.0",
+    "@stencil/redux": "^0.2.0",
+    "@stencil/router": "^1.0.1",
+    "@types/jest": "^26.0.24",
     "babel-loader": "^8.2.3",
     "css-loader": "^6.5.1",
     "html-webpack-plugin": "^5.5.0",
+    "jest": "^26.6.3",
+    "jest-cli": "^26.6.3",
+    "puppeteer": "^10.0.0",
+    "redux": "^4.1.2",
     "style-loader": "^3.3.1",
     "webpack": "^5.64.4",
     "webpack-cli": "^4.9.1",
