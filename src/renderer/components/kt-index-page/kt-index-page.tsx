@@ -49,7 +49,9 @@ export class KtIndexPage {
       <Host>
         <button onClick={this.openButtonClick.bind(this)}>Open</button>
         <ul>
-          {this.decks.map(v => <a key={v.id} href="" onClick={this.deckClick.bind(this, v)}>{v.id}</a>)}
+          {this.decks.map(v =>
+            <li><a key={v.id} href="" onClick={this.deckClick.bind(this, v)}>{v.id}</a></li>
+          )}
         </ul>
       </Host>
     );
