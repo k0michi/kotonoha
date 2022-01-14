@@ -47,8 +47,6 @@ export class Store {
   }
 }
 
-const timestampExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-
 export class Deck {
   id;
   name;
@@ -93,31 +91,66 @@ export class Deck {
     return this.scores[word];
   }
 
-  setScore(word, score) {
+  setScore(word: string, score: Score) {
     this.scores[word] = score;
   }
 
-  addAttempt(attempt) {
+  startAttempt(word: string) {
+    const id = this.attempts.length;
+    const questionedAt = new Date();
+    const attempt = { id, word, questionedAt };
+    this.attempts.push(attempt);
+    return id;
+  }
+
+  answerAttempt(attemptID: number) {
+    this.attempts[attemptID].answeredAt = new Date();
+  }
+
+  gradeAttempt(attemptID: number, grade: number) {
+    this.attempts[attemptID].gradedAt = new Date();
+  }
+
+  addAttempt(attempt: Attempt) {
     this.attempts.push(attempt);
   }
 
   static fromJSON(json) {
-    const parsed = JSON.parse(json, (key, value) => {
-      if (typeof value == 'string' && timestampExp.test(value)) {
-        return new Date(value);
-      } else {
-        return value;
-      }
-    });
-
-    const deck = new Deck(parsed.id, parsed.name, parsed.entries, parsed.createdAt, parsed.attempts, parsed.scores);
-    return deck;
+    const parsed = parseJSON(json);
+    return new Deck(parsed.id, parsed.name, parsed.entries, parsed.createdAt, parsed.attempts, parsed.scores);
   }
 
   toJSON() {
     const object = { id: this.id, name: this.name, entries: this.entries, createdAt: this.createdAt, attempts: this.attempts, scores: this.scores };
     return JSON.stringify(object);
   }
+}
+
+export interface Attempt {
+  id: number;
+  word: string;
+  grade?: number;
+  questionedAt: Date;
+  answeredAt?: Date;
+  gradedAt?: Date;
+}
+
+export interface Score {
+  repetitions: number;
+  easeFactor: number;
+  interval: number;
+}
+
+const timestampExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+function parseJSON(json) {
+  return JSON.parse(json, (key, value) => {
+    if (typeof value == 'string' && timestampExp.test(value)) {
+      return new Date(value);
+    } else {
+      return value;
+    }
+  });
 }
 
 export const store = new Store();

@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop, State, Listen } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
-import { store, Deck } from '../../store';
+import { store, Deck, Attempt } from '../../store';
 import * as scheduler from '../../scheduler';
 import * as utils from '../../utils';
 
@@ -11,8 +11,9 @@ import * as utils from '../../utils';
 export class KtStudyPage {
   @Prop() history: RouterHistory;
   @Prop() match: MatchResults;
-  deck;
+  deck: Deck;
   entries;
+  attemptID: number;
   @State() currentEntry;
   @State() showingAnswer = false;
   @State() typedLetters = 0;
@@ -23,19 +24,27 @@ export class KtStudyPage {
     this.currentEntry = this.entries[utils.random(0, this.entries.length)];
   }
 
+  componentDidRender() {
+    if (this.attemptID == null) {
+      this.attemptID = this.deck.startAttempt(this.currentEntry.word);
+    }
+  }
+
+  quit() {
+    this.history.push(`/`, {});
+  }
+
   @Listen('keydown', { target: 'window' })
   async handleKeyDown(e: KeyboardEvent) {
-    console.log(e)
     if (e.key == 'Escape') {
-      this.history.push(`/`, {});
+      this.quit();
     }
 
     if (this.showingAnswer) {
       if (e.key >= '1' && e.key <= '4') {
         const grade = parseInt(e.key, 10) - 1;
 
-        const now = new Date();
-        this.deck.addAttempt({ word: this.currentEntry.word, grade, date: now });
+        this.deck.gradeAttempt(this.attemptID, grade);
 
         const currentScore = this.deck.getScore(this.currentEntry.word) ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
         const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
@@ -45,11 +54,12 @@ export class KtStudyPage {
         this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
 
         if (this.entries.length == 0) {
-          this.history.push(`/`, {});
+          this.quit();
         } else {
           this.currentEntry = this.entries[utils.random(0, this.entries.length)];
           this.typedLetters = 0;
           this.showingAnswer = false;
+          this.attemptID = this.deck.startAttempt(this.currentEntry.word);
         }
       }
     } else {
@@ -59,6 +69,7 @@ export class KtStudyPage {
 
       if (e.code == 'Enter' && this.typedLetters == this.currentEntry.word.length) {
         this.showingAnswer = true;
+        this.deck.answerAttempt(this.attemptID);
       }
     }
   }
