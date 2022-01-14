@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, State, Listen } from '@stencil/core';
+import { Component, Host, h, Prop, State, Listen, Fragment } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
 import { store, Deck, Attempt } from '../../store';
 import * as scheduler from '../../scheduler';
@@ -34,6 +34,33 @@ export class KtStudyPage {
     this.history.push(`/`, {});
   }
 
+  async gradeWord(grade) {
+    this.deck.gradeAttempt(this.attemptID, grade);
+
+    const currentScore = this.deck.getScore(this.currentEntry.word) ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
+    const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
+    this.deck.setScore(this.currentEntry.word, newScore);
+
+    await store.saveDeck(this.deck);
+    this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
+
+    if (this.entries.length == 0) {
+      this.quit();
+    } else {
+      this.currentEntry = this.entries[utils.random(0, this.entries.length)];
+      this.typedLetters = 0;
+      this.showingAnswer = false;
+      this.attemptID = this.deck.startAttempt(this.currentEntry.word);
+    }
+  }
+
+  async showAnswer() {
+    if (this.typedLetters == this.currentEntry.word.length) {
+      this.showingAnswer = true;
+      this.deck.answerAttempt(this.attemptID);
+    }
+  }
+
   @Listen('keydown', { target: 'window' })
   async handleKeyDown(e: KeyboardEvent) {
     if (e.key == 'Escape') {
@@ -43,60 +70,64 @@ export class KtStudyPage {
     if (this.showingAnswer) {
       if (e.key >= '1' && e.key <= '4') {
         const grade = parseInt(e.key, 10) - 1;
-
-        this.deck.gradeAttempt(this.attemptID, grade);
-
-        const currentScore = this.deck.getScore(this.currentEntry.word) ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
-        const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
-        this.deck.setScore(this.currentEntry.word, newScore);
-
-        await store.saveDeck(this.deck);
-        this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
-
-        if (this.entries.length == 0) {
-          this.quit();
-        } else {
-          this.currentEntry = this.entries[utils.random(0, this.entries.length)];
-          this.typedLetters = 0;
-          this.showingAnswer = false;
-          this.attemptID = this.deck.startAttempt(this.currentEntry.word);
-        }
+        await this.gradeWord(grade);
       }
     } else {
       if (e.key == this.currentEntry.word[this.typedLetters]) {
         this.typedLetters++;
       }
 
-      if (e.code == 'Enter' && this.typedLetters == this.currentEntry.word.length) {
-        this.showingAnswer = true;
-        this.deck.answerAttempt(this.attemptID);
+      if (e.code == 'Enter') {
+        await this.showAnswer();
       }
     }
+  }
+
+  async onClickShow() {
+    await this.showAnswer();
+  }
+
+  async onClickGrade(grade) {
+    await this.gradeWord(grade);
   }
 
   render() {
     const hue = utils.normalizeEnglishWord(this.currentEntry.word) * 360;
     const letters = [...this.currentEntry.word];
+    const canShowAnswer = this.typedLetters == this.currentEntry.word.length;
 
     return (
       <Host>
-        <h1>
-          {letters.map((l, i) => {
-            let style;
+        <div id="container">
+          <h1 id="headword">
+            {letters.map((l, i) => {
+              let style;
 
-            if (i == this.typedLetters) {
-              style = { textDecoration: 'underline' };
-            } else if (i < this.typedLetters) {
-              style = { color: `hsl(${hue}, 100%, 50%)` };
+              if (i == this.typedLetters) {
+                style = { textDecoration: 'underline' };
+              } else if (i < this.typedLetters) {
+                style = { color: `hsl(${hue}, 100%, 50%)` };
+              }
+
+              return <span key={l} style={style}>{l}</span>
+            })}
+          </h1>
+          <div id="definition-list">
+            {this.currentEntry.definitions.map((d, i) =>
+              <h2><span>{d.partOfSpeech}</span><span style={this.showingAnswer ? {} : { color: 'transparent', userSelect: 'none' }}> {d.definition}</span></h2>
+            )}
+          </div>
+          <div id="buttons">
+            {this.showingAnswer ?
+              <>
+                <button class="grade-0" onClick={this.onClickGrade.bind(this, 0)}>Very Easy</button>
+                <button class="grade-1" onClick={this.onClickGrade.bind(this, 1)}>Easy</button>
+                <button class="grade-2" onClick={this.onClickGrade.bind(this, 2)}>Hard</button>
+                <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Very Hard</button>
+              </> :
+              <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
             }
-
-            return <span key={l} style={style}>{l}</span>
-          })}
-        </h1>
-        <div>
-          {this.currentEntry.definitions.map((d, i) =>
-            <h2>{d.partOfSpeech}{this.showingAnswer ? ` ${d.definition}` : ''}</h2>
-          )}
+          </div>
         </div>
       </Host>
     );
