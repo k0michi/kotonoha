@@ -11,6 +11,7 @@ export class KtRoot {
           <stencil-route-switch scrollTopOffset={0}>
             <stencil-route url="/" component="kt-index-page" exact={true} />
             <stencil-route url="/study/:deckID" component="kt-study-page" />
+            <stencil-route url="/edit/:deckID" component="kt-edit-page" />
           </stencil-route-switch>
         </stencil-router>
       </Host>

@@ -39,9 +39,13 @@ export class KtIndexPage {
     }
   }
 
-  deckClick(deck, e) {
+  onClickDeck(deck, e) {
     e.preventDefault();
     this.history.push(`/study/${deck.id}`, {});
+  }
+
+  onClickEdit(deck, e) {
+    this.history.push(`/edit/${deck.id}`, {});
   }
 
   render() {
@@ -50,7 +54,10 @@ export class KtIndexPage {
         <button onClick={this.openButtonClick.bind(this)}>Open</button>
         <ul>
           {this.decks.map(v =>
-            <li><a key={v.id} href="" onClick={this.deckClick.bind(this, v)}>{v.id}</a></li>
+            <li>
+              <a key={v.id} href="" onClick={this.onClickDeck.bind(this, v)}>{v.id}</a>
+              <button onClick={this.onClickEdit.bind(this, v)}>Edit</button>
+            </li>
           )}
         </ul>
       </Host>
