@@ -61,8 +61,8 @@ export class Deck extends EventEmitter {
   createdAt;
   attempts;
   scores;
-  attemptCounts;
   latestAttemptDates;
+  attemptCounts;
 
   constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
     super();
@@ -73,6 +73,7 @@ export class Deck extends EventEmitter {
     this.attempts = attempts;
     this.scores = scores;
 
+    this.latestAttemptDates = [];
     this.attemptCounts = [];
     this.attemptCounts.length = this.entries.length;
     this.attemptCounts.fill(0);
@@ -81,8 +82,6 @@ export class Deck extends EventEmitter {
       this.updateAttemptDate(attempt.entryID, attempt.gradedAt);
       this.incrementAttemptCount(attempt.entryID);
     }
-
-    this.latestAttemptDates = [];
   }
 
   incrementAttemptCount(entryID) {

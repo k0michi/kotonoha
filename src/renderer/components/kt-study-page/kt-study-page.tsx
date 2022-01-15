@@ -20,13 +20,8 @@ export class KtStudyPage {
   @State() typedLetters = 0;
 
   componentWillLoad() {
-    this.isPractice = this.history.location.query.practice ?? false;
+    this.isPractice = this.history.location.query.practice == "true" ?? false;
     this.deck = store.getDeck(this.match.params.deckID);
-
-    console.log(this.deck.entries);
-    console.log(this.deck.getPracticeCards());
-    console.log(this.deck.getNewCards());
-    console.log(this.deck.getReviewCards());
 
     if (this.isPractice) {
       this.entries = this.deck.getPracticeCards();

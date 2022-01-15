@@ -40,16 +40,12 @@ export class KtIndexPage {
 
   onClickPractice(deck, e) {
     e.preventDefault();
-    this.history.push(`/study/${deck.id}`, {});
+    this.history.push(`/study/${deck.id}?practice=true`, {});
   }
 
   onClickEdit(deck, e) {
-    this.history.push({
-      pathname: `/study/${deck.id}`,
-      query: {
-        practice: true
-      }
-    } as any, {});
+    e.preventDefault();
+    this.history.push(`/edit/${deck.id}`, {});
   }
 
   render() {
