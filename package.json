@@ -1,14 +1,11 @@
 {
   "name": "kotonoha",
   "productName": "Kotonoha",
-  "dependencies": {
-    "electron": "^16.0.6"
-  },
   "scripts": {
-    "build": "stencil build --dev && babel src --out-dir dist",
-    "build.main": "babel src --out-dir dist",
+    "build": "stencil build --dev && tsc src/main.ts src/preload.ts --outDir dist",
+    "build.watch": "concurrently \"stencil build --dev --watch\" \"tsc --watch src/main.ts src/preload.ts --outDir dist\"",
     "build.renderer": "stencil build --dev",
-    "watch.renderer": "stencil build --dev --watch",
+    "build.main": "tsc src/main.ts src/preload.ts --outDir dist",
     "start": "electron .",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
@@ -23,13 +20,16 @@
     "@stencil/router": "^1.0.1",
     "@types/jest": "^26.0.24",
     "babel-loader": "^8.2.3",
+    "concurrently": "^7.0.0",
     "css-loader": "^6.5.1",
+    "electron": "^16.0.7",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^26.6.3",
     "jest-cli": "^26.6.3",
     "puppeteer": "^10.0.0",
     "redux": "^4.1.2",
     "style-loader": "^3.3.1",
+    "typescript": "^4.5.4",
     "webpack": "^5.64.4",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.6.0"
