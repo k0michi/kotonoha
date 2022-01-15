@@ -54,7 +54,7 @@ export class Store extends EventEmitter {
   }
 }
 
-export class Deck {
+export class Deck extends EventEmitter {
   id;
   name;
   entries;
@@ -64,6 +64,7 @@ export class Deck {
   entryMap;
 
   constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = {}) {
+    super();
     this.id = id;
     this.name = name;
     this.entries = entries;
@@ -76,6 +77,11 @@ export class Deck {
     for (const e of this.getAllEntries()) {
       this.entryMap[e.word] = e;
     }
+  }
+
+  setName(name) {
+    this.name = name;
+    this.emit('change');
   }
 
   getAllEntries() {

@@ -8,7 +8,6 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { MatchResults, RouterHistory } from "@stencil/router";
 export namespace Components {
     interface KtEditPage {
-        "entries": any;
         "history": RouterHistory;
         "match": MatchResults;
     }
@@ -56,7 +55,6 @@ declare global {
 }
 declare namespace LocalJSX {
     interface KtEditPage {
-        "entries"?: any;
         "history"?: RouterHistory;
         "match"?: MatchResults;
     }
