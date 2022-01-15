@@ -16,30 +16,22 @@ export class KtIndexPage {
   updateDecks() {
     const decks = store.getDecks();
     this.decks = Object.entries(decks).map(([_, value]) => {
-      return { id: (value as any).id };
+      return { id: (value as any).id, name: (value as any).name };
     });
   }
 
-  componentWillLoad() {
+  async componentWillLoad() {
+    await store.initialize();
     this.updateDecks();
-    
+
     store.on('change', (() => {
       this.updateDecks();
     }).bind(this));
   }
 
-  async openButtonClick(e: MouseEvent) {
-    const file = await bridge.openFile();
-
-    if (file != null) {
-      const id = bridge.path.basename(file, bridge.path.extname(file));
-      const content = await bridge.readFile(file);
-      const tree = ewl.parse(content);
-
-      const deck = new Deck(id, id, tree.entries);
-      await store.saveDeck(deck);
-      store.addDeck(deck);
-    }
+  async onClickNew(e: MouseEvent) {
+    const deck = store.newDeck('Untitled');
+    await store.saveDeck(deck);
   }
 
   onClickDeck(deck, e) {
@@ -54,11 +46,11 @@ export class KtIndexPage {
   render() {
     return (
       <Host>
-        <button onClick={this.openButtonClick.bind(this)}>Open</button>
+        <button onClick={this.onClickNew.bind(this)}>New</button>
         <ul>
           {this.decks.map(v =>
             <li>
-              <a key={v.id} href="" onClick={this.onClickDeck.bind(this, v)}>{v.id}</a>
+              <a key={v.id} href="" onClick={this.onClickDeck.bind(this, v)}>{v.name}</a>
               <button onClick={this.onClickEdit.bind(this, v)}>Edit</button>
             </li>
           )}

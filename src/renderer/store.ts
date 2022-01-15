@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { nanoid } from 'nanoid';
 
 const bridge = globalThis.bridge;
 
@@ -13,14 +14,17 @@ export class Store extends EventEmitter {
     if (deckFiles != null) {
       for (const deckFile of deckFiles) {
         const deck = await this.loadDeck(deckFile);
-        this.addDeck(deck);
+        this.decks[deck.id] = deck;
       }
     }
   }
 
-  addDeck(deck) {
-    this.decks[deck.id] = deck;
+  newDeck(name) {
+    const id = nanoid(21);
+    const deck = new Deck(id, name);
+    this.decks[id] = deck;
     this.emit('change');
+    return deck;
   }
 
   getDeck(id) {
