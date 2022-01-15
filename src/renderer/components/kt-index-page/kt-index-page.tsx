@@ -22,6 +22,10 @@ export class KtIndexPage {
 
   componentWillLoad() {
     this.updateDecks();
+    
+    store.on('change', (() => {
+      this.updateDecks();
+    }).bind(this));
   }
 
   async openButtonClick(e: MouseEvent) {
@@ -35,7 +39,6 @@ export class KtIndexPage {
       const deck = new Deck(id, id, tree.entries);
       await store.saveDeck(deck);
       store.addDeck(deck);
-      this.updateDecks();
     }
   }
 

@@ -1,6 +1,8 @@
+import { EventEmitter } from 'events';
+
 const bridge = globalThis.bridge;
 
-export class Store {
+export class Store extends EventEmitter {
   decks = {};
   config;
 
@@ -18,6 +20,7 @@ export class Store {
 
   addDeck(deck) {
     this.decks[deck.id] = deck;
+    this.emit('change');
   }
 
   getDeck(id) {
