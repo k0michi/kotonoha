@@ -79,6 +79,11 @@ export class Deck extends EventEmitter {
     }
   }
 
+  addEntry(entry) {
+    this.entries.push(entry);
+    this.emit('change');
+  }
+
   setName(name) {
     this.name = name;
     this.emit('change');

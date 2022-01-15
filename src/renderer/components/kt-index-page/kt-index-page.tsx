@@ -1,7 +1,6 @@
 import { Component, Host, h, State, Prop } from '@stencil/core';
 import { RouterHistory } from '@stencil/router';
 import { store, Deck } from '../../store';
-import * as ewl from '../../ewl';
 
 const bridge = globalThis.bridge;
 
