@@ -26,7 +26,7 @@ export class KtStudyPage {
 
   componentDidRender() {
     if (this.attemptID == null) {
-      this.attemptID = this.deck.startAttempt(this.currentEntry.word);
+      this.attemptID = this.deck.startAttempt(this.currentEntry.id);
     }
   }
 
@@ -37,9 +37,9 @@ export class KtStudyPage {
   async gradeWord(grade) {
     this.deck.gradeAttempt(this.attemptID, grade);
 
-    const currentScore = this.deck.getScore(this.currentEntry.word) ?? { repetitions: 0, easeFactor: 2.5, interval: 1 };
+    const currentScore = this.deck.getScore(this.currentEntry.id);
     const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
-    this.deck.setScore(this.currentEntry.word, newScore);
+    this.deck.setScore(this.currentEntry.id, newScore);
 
     await store.saveDeck(this.deck);
     this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
@@ -50,7 +50,7 @@ export class KtStudyPage {
       this.currentEntry = this.entries[utils.random(0, this.entries.length)];
       this.typedLetters = 0;
       this.showingAnswer = false;
-      this.attemptID = this.deck.startAttempt(this.currentEntry.word);
+      this.attemptID = this.deck.startAttempt(this.currentEntry.id);
     }
   }
 

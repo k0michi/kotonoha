@@ -63,7 +63,7 @@ export class Deck extends EventEmitter {
   scores;
   entryMap;
 
-  constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = {}) {
+  constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
     super();
     this.id = id;
     this.name = name;
@@ -80,6 +80,9 @@ export class Deck extends EventEmitter {
   }
 
   addEntry(entry) {
+    const id = this.entries.length;
+    entry.id = id;
+    this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, entryID: id });
     this.entries.push(entry);
     this.emit('change');
   }
@@ -105,18 +108,18 @@ export class Deck extends EventEmitter {
     return entries;
   }
 
-  getScore(word) {
-    return this.scores[word];
+  getScore(entryID: number) {
+    return this.scores[entryID];
   }
 
-  setScore(word: string, score: Score) {
-    this.scores[word] = score;
+  setScore(entryID: number, score) {
+    this.scores[entryID] = score;
   }
 
-  startAttempt(word: string) {
+  startAttempt(entryID: number) {
     const id = this.attempts.length;
     const questionedAt = new Date();
-    const attempt = { id, word, questionedAt };
+    const attempt = { id, entryID, questionedAt };
     this.attempts.push(attempt);
     return id;
   }
@@ -146,7 +149,7 @@ export class Deck extends EventEmitter {
 
 export interface Attempt {
   id: number;
-  word: string;
+  entryID: number;
   grade?: number;
   questionedAt: Date;
   answeredAt?: Date;
@@ -154,6 +157,7 @@ export interface Attempt {
 }
 
 export interface Score {
+  entryID: number;
   repetitions: number;
   easeFactor: number;
   interval: number;

@@ -43,11 +43,12 @@ export class KtEditPage {
       const tree = ewl.parse(content);
       
       for (const e of tree.entries) {
-        this.deck.addEntry(e);
-
         for (const d of e.derivatives) {
           this.deck.addEntry(d);
         }
+
+        delete e.derivatives;
+        this.deck.addEntry(e);
       }
 
       await store.saveDeck(this.deck);
