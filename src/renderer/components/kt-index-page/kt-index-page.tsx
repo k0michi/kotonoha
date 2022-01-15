@@ -33,13 +33,23 @@ export class KtIndexPage {
     await store.saveDeck(deck);
   }
 
-  onClickDeck(deck, e) {
+  onClickStudy(deck, e) {
+    e.preventDefault();
+    this.history.push(`/study/${deck.id}`, {});
+  }
+
+  onClickPractice(deck, e) {
     e.preventDefault();
     this.history.push(`/study/${deck.id}`, {});
   }
 
   onClickEdit(deck, e) {
-    this.history.push(`/edit/${deck.id}`, {});
+    this.history.push({
+      pathname: `/study/${deck.id}`,
+      query: {
+        practice: true
+      }
+    } as any, {});
   }
 
   render() {
@@ -49,7 +59,9 @@ export class KtIndexPage {
         <ul>
           {this.decks.map(v =>
             <li>
-              <a key={v.id} href="" onClick={this.onClickDeck.bind(this, v)}>{v.name}</a>
+              {v.name}
+              <button onClick={this.onClickStudy.bind(this, v)}>Study</button>
+              <button onClick={this.onClickPractice.bind(this, v)}>Practice</button>
               <button onClick={this.onClickEdit.bind(this, v)}>Edit</button>
             </li>
           )}

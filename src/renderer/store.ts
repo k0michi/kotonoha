@@ -61,6 +61,8 @@ export class Deck extends EventEmitter {
   createdAt;
   attempts;
   scores;
+  attemptCounts;
+  latestAttemptDates;
 
   constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
     super();
@@ -70,6 +72,25 @@ export class Deck extends EventEmitter {
     this.createdAt = createdAt;
     this.attempts = attempts;
     this.scores = scores;
+
+    this.attemptCounts = [];
+    this.attemptCounts.length = this.entries.length;
+    this.attemptCounts.fill(0);
+
+    for (const attempt of this.attempts) {
+      this.updateAttemptDate(attempt.entryID, attempt.gradedAt);
+      this.incrementAttemptCount(attempt.entryID);
+    }
+
+    this.latestAttemptDates = [];
+  }
+
+  incrementAttemptCount(entryID) {
+    this.attemptCounts[entryID]++;
+  }
+
+  updateAttemptDate(entryID, date) {
+    this.latestAttemptDates[entryID] = date;
   }
 
   addEntry(entry) {
@@ -85,20 +106,51 @@ export class Deck extends EventEmitter {
     this.emit('change');
   }
 
-  getAllEntries() {
-    const entries = [];
+  getDueDate(entryID) {
+    const score = this.scores[entryID];
+    const dueDate = new Date(this.latestAttemptDates[entryID]);
+    dueDate.setDate(dueDate.getDate() + score.interval);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate;
+  }
 
-    for (const e of this.entries) {
-      entries.push(e);
+  getNewCards() {
+    const cards = [];
 
-      if (e.derivatives != null) {
-        for (const d of e.derivatives) {
-          entries.push(d);
+    for (const entry of this.entries) {
+      if (this.attemptCounts[entry.id] == 0) {
+        cards.push(entry);
+      }
+    }
+
+    return cards;
+  }
+
+  getReviewCards() {
+    const cards = [];
+    const now = new Date();
+
+    for (const entry of this.entries) {
+      if (this.attemptCounts[entry.id] > 0) {
+        if (this.getDueDate(entry.id) < now) {
+          cards.push(entry);
         }
       }
     }
 
-    return entries;
+    return cards;
+  }
+
+  getPracticeCards() {
+    const cards = [];
+
+    for (const entry of this.entries) {
+      if (this.attemptCounts[entry.id] > 0) {
+        cards.push(entry);
+      }
+    }
+
+    return cards;
   }
 
   getScore(entryID: number) {
@@ -114,6 +166,7 @@ export class Deck extends EventEmitter {
     const questionedAt = new Date();
     const attempt = { id, entryID, questionedAt };
     this.attempts.push(attempt);
+    this.incrementAttemptCount(entryID);
     return id;
   }
 
@@ -123,6 +176,8 @@ export class Deck extends EventEmitter {
 
   gradeAttempt(attemptID: number, grade: number) {
     this.attempts[attemptID].gradedAt = new Date();
+    this.attempts[attemptID].grade = grade;
+    this.updateAttemptDate(attemptID, this.attempts[attemptID].gradedAt);
   }
 
   addAttempt(attempt: Attempt) {

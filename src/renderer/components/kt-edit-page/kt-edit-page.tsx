@@ -16,7 +16,7 @@ export class KtEditPage {
   @State() entries;
 
   update() {
-    this.entries = this.deck.getAllEntries().map(e => {
+    this.entries = this.deck.entries.map(e => {
       return { word: e.word };
     });
   }

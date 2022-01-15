@@ -14,13 +14,27 @@ export class KtStudyPage {
   deck: Deck;
   entries;
   attemptID: number;
+  @State() isPractice;
   @State() currentEntry;
   @State() showingAnswer = false;
   @State() typedLetters = 0;
 
   componentWillLoad() {
+    this.isPractice = this.history.location.query.practice ?? false;
     this.deck = store.getDeck(this.match.params.deckID);
-    this.entries = this.deck.getAllEntries();
+
+    console.log(this.deck.entries);
+    console.log(this.deck.getPracticeCards());
+    console.log(this.deck.getNewCards());
+    console.log(this.deck.getReviewCards());
+
+    if (this.isPractice) {
+      this.entries = this.deck.getPracticeCards();
+    } else {
+      this.entries = this.deck.getNewCards();
+      this.entries = this.entries.concat(this.deck.getReviewCards());
+    }
+
     this.currentEntry = this.entries[utils.random(0, this.entries.length)];
   }
 
