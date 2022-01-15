@@ -1,5 +1,5 @@
 // https://en.wikipedia.org/wiki/SuperMemo#Description_of_SM-2_algorithm
-export function sm2(grade, { repetitions, easeFactor, interval, entryID }) {
+export function sm2(grade, { repetitions, easeFactor, interval, id }) {
   if (grade >= 3) {
     if (repetitions == 0) {
       interval = 1;
@@ -21,5 +21,5 @@ export function sm2(grade, { repetitions, easeFactor, interval, entryID }) {
     easeFactor = 1.3;
   }
 
-  return { repetitions, easeFactor, interval, entryID };
+  return { repetitions, easeFactor, interval, id };
 }

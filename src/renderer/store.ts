@@ -61,7 +61,6 @@ export class Deck extends EventEmitter {
   createdAt;
   attempts;
   scores;
-  entryMap;
 
   constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
     super();
@@ -71,18 +70,12 @@ export class Deck extends EventEmitter {
     this.createdAt = createdAt;
     this.attempts = attempts;
     this.scores = scores;
-
-    this.entryMap = {};
-
-    for (const e of this.getAllEntries()) {
-      this.entryMap[e.word] = e;
-    }
   }
 
   addEntry(entry) {
     const id = this.entries.length;
     entry.id = id;
-    this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, entryID: id });
+    this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
     this.entries.push(entry);
     this.emit('change');
   }
