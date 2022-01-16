@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, State } from '@stencil/core';
+import { Component, Host, h, Prop, State, Fragment } from '@stencil/core';
 import { MatchResults, RouterHistory } from '@stencil/router';
 import { Deck, store } from '../../store';
 import * as ewl from '../../ewl';
@@ -16,9 +16,7 @@ export class KtEditPage {
   @State() entries;
 
   update() {
-    this.entries = this.deck.entries.map(e => {
-      return { word: e.word };
-    });
+    this.entries = this.deck.entries;
   }
 
   componentWillLoad() {
@@ -41,7 +39,7 @@ export class KtEditPage {
     if (file != null) {
       const content = await bridge.readFile(file);
       const tree = ewl.parse(content);
-      
+
       for (const e of tree.entries) {
         for (const d of e.derivatives) {
           this.deck.addEntry(d);
@@ -62,7 +60,14 @@ export class KtEditPage {
         <button onClick={this.onClickImport.bind(this)}>Import</button>
         <ul>
           {this.entries.map(e =>
-            <li key={e.word}>{e.word}</li>
+            <>
+              <li key={e.word}>{e.word}</li>
+              <ul>
+                {e.definitions.map(d =>
+                  <li>{d.partOfSpeech} {d.definition}</li>
+                )}
+              </ul>
+            </>
           )}
         </ul>
       </Host>
