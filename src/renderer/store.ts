@@ -54,6 +54,10 @@ export class Store extends EventEmitter {
   }
 }
 
+export enum AttemptType {
+  New, Review, Practice
+}
+
 export class Deck extends EventEmitter {
   id;
   name;
@@ -61,8 +65,13 @@ export class Deck extends EventEmitter {
   createdAt;
   attempts;
   scores;
-  latestAttemptDates;
-  attemptCounts;
+  latestAttemptDates = [];
+  attemptCounts = [];
+  newCount = 0;
+  reviewCount = 0;
+  practiceCount = 0;
+  date;
+  ongoingAttempt;
 
   constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
     super();
@@ -73,19 +82,44 @@ export class Deck extends EventEmitter {
     this.attempts = attempts;
     this.scores = scores;
 
-    this.latestAttemptDates = [];
-    this.attemptCounts = [];
     this.attemptCounts.length = this.entries.length;
     this.attemptCounts.fill(0);
 
     for (const attempt of this.attempts) {
       this.updateAttemptDate(attempt.entryID, attempt.gradedAt);
-      this.incrementAttemptCount(attempt.entryID);
+      this.incrementAttemptCount(attempt.entryID, attempt.type);
+    }
+
+    this.date = new Date();
+  }
+
+  updateDayCount() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (today > this.date) {
+      this.newCount = 0;
+      this.reviewCount = 0;
+      this.practiceCount = 0;
+      this.date = new Date();
+      this.emit('change');
     }
   }
 
-  incrementAttemptCount(entryID) {
+  incrementAttemptCount(entryID, type) {
     this.attemptCounts[entryID]++;
+
+    switch (type) {
+      case AttemptType.New:
+        this.newCount++;
+        break;
+      case AttemptType.Review:
+        this.reviewCount++;
+        break;
+      case AttemptType.Practice:
+        this.practiceCount++;
+        break;
+    }
   }
 
   updateAttemptDate(entryID, date) {
@@ -114,42 +148,15 @@ export class Deck extends EventEmitter {
   }
 
   getNewCards() {
-    const cards = [];
-
-    for (const entry of this.entries) {
-      if (this.attemptCounts[entry.id] == 0) {
-        cards.push(entry);
-      }
-    }
-
-    return cards;
+    return this.entries.filter((e => this.getType(e.id) == AttemptType.New).bind(this));
   }
 
   getReviewCards() {
-    const cards = [];
-    const now = new Date();
-
-    for (const entry of this.entries) {
-      if (this.attemptCounts[entry.id] > 0) {
-        if (this.getDueDate(entry.id) < now) {
-          cards.push(entry);
-        }
-      }
-    }
-
-    return cards;
+    return this.entries.filter((e => this.getType(e.id) == AttemptType.Review).bind(this));
   }
 
   getPracticeCards() {
-    const cards = [];
-
-    for (const entry of this.entries) {
-      if (this.attemptCounts[entry.id] > 0) {
-        cards.push(entry);
-      }
-    }
-
-    return cards;
+    return this.entries.filter((e => this.getType(e.id) == AttemptType.Practice).bind(this));
   }
 
   getScore(entryID: number) {
@@ -160,23 +167,42 @@ export class Deck extends EventEmitter {
     this.scores[entryID] = score;
   }
 
+  getType(entryID: number): AttemptType {
+    const now = new Date();
+
+    if (this.attemptCounts[entryID] == 0) {
+      return AttemptType.New;
+    } else {
+      if (this.getDueDate(entryID) < now) {
+        return AttemptType.Review;
+      } else {
+        return AttemptType.Practice;
+      }
+    }
+  }
+
   startAttempt(entryID: number) {
     const id = this.attempts.length;
     const questionedAt = new Date();
-    const attempt = { id, entryID, questionedAt };
-    this.attempts.push(attempt);
-    this.incrementAttemptCount(entryID);
+    const type = this.getType(entryID);
+    const attempt = { id, entryID, questionedAt, type };
+    this.ongoingAttempt = attempt;
     return id;
   }
 
-  answerAttempt(attemptID: number) {
-    this.attempts[attemptID].answeredAt = new Date();
+  answerAttempt() {
+    this.ongoingAttempt.answeredAt = new Date();
   }
 
-  gradeAttempt(attemptID: number, grade: number) {
-    this.attempts[attemptID].gradedAt = new Date();
-    this.attempts[attemptID].grade = grade;
-    this.updateAttemptDate(attemptID, this.attempts[attemptID].gradedAt);
+  gradeAttempt(grade: number) {
+    this.ongoingAttempt.gradedAt = new Date();
+    this.ongoingAttempt.grade = grade;
+    this.attempts.push(this.ongoingAttempt);
+
+    this.incrementAttemptCount(this.ongoingAttempt.entryID, this.ongoingAttempt.type);
+    this.updateAttemptDate(this.ongoingAttempt.entryID, this.ongoingAttempt.gradedAt);
+    this.ongoingAttempt = null;
+    this.emit('change');
   }
 
   addAttempt(attempt: Attempt) {

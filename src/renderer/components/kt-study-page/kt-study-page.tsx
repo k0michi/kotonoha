@@ -22,6 +22,7 @@ export class KtStudyPage {
   componentWillLoad() {
     this.isPractice = this.history.location.query.practice == "true" ?? false;
     this.deck = store.getDeck(this.match.params.deckID);
+    this.deck.updateDayCount();
 
     if (this.isPractice) {
       this.entries = this.deck.getPracticeCards();
@@ -44,7 +45,7 @@ export class KtStudyPage {
   }
 
   async gradeWord(grade) {
-    this.deck.gradeAttempt(this.attemptID, grade);
+    this.deck.gradeAttempt(grade);
 
     const currentScore = this.deck.getScore(this.currentEntry.id);
     const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
@@ -66,7 +67,7 @@ export class KtStudyPage {
   async showAnswer() {
     if (this.typedLetters == this.currentEntry.word.length) {
       this.showingAnswer = true;
-      this.deck.answerAttempt(this.attemptID);
+      this.deck.answerAttempt();
     }
   }
 
@@ -137,6 +138,7 @@ export class KtStudyPage {
               <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
             }
           </div>
+          <div>{this.deck.newCount} - {this.deck.reviewCount} - {this.deck.practiceCount}</div>
         </div>
       </Host>
     );
