@@ -4,6 +4,8 @@ import { store, Deck, Attempt } from '../../store';
 import * as scheduler from '../../scheduler';
 import * as utils from '../../utils';
 
+const DAILY_MAX = 20;
+
 @Component({
   tag: 'kt-study-page',
   styleUrl: 'kt-study-page.css'
@@ -28,7 +30,12 @@ export class KtStudyPage {
       this.entries = this.deck.getPracticeCards();
     } else {
       this.entries = this.deck.getNewCards();
+      this.entries = this.entries.slice(0, DAILY_MAX);
       this.entries = this.entries.concat(this.deck.getReviewCards());
+
+      if (this.entries.length == 0) {
+        this.entries = this.deck.getNewCards();
+      }
     }
 
     this.currentEntry = this.entries[utils.random(0, this.entries.length)];
@@ -37,6 +44,10 @@ export class KtStudyPage {
   componentDidRender() {
     if (this.attemptID == null) {
       this.attemptID = this.deck.startAttempt(this.currentEntry.id);
+    }
+
+    if (this.currentEntry == null) {
+      this.history.push(`/`, {});
     }
   }
 
@@ -109,36 +120,38 @@ export class KtStudyPage {
     return (
       <Host>
         <div id="container">
-          <h1 id="headword">
-            {letters.map((l, i) => {
-              let style;
+          {this.currentEntry != null ? <>
+            <h1 id="headword">
+              {letters.map((l, i) => {
+                let style;
 
-              if (i == this.typedLetters) {
-                style = { textDecoration: 'underline' };
-              } else if (i < this.typedLetters) {
-                style = { color: `hsl(${hue}, 100%, 50%)` };
+                if (i == this.typedLetters) {
+                  style = { textDecoration: 'underline' };
+                } else if (i < this.typedLetters) {
+                  style = { color: `hsl(${hue}, 100%, 50%)` };
+                }
+
+                return <span key={l} style={style}>{l}</span>
+              })}
+            </h1>
+            <div id="definition-list">
+              {this.currentEntry.definitions.map((d, i) =>
+                <h2><span>{d.partOfSpeech}</span><span style={this.showingAnswer ? {} : { color: 'transparent', userSelect: 'none' }}> {d.definition}</span></h2>
+              )}
+            </div>
+            <div id="buttons">
+              {this.showingAnswer ?
+                <>
+                  <button class="grade-0" onClick={this.onClickGrade.bind(this, 0)}>Very Easy</button>
+                  <button class="grade-1" onClick={this.onClickGrade.bind(this, 1)}>Easy</button>
+                  <button class="grade-2" onClick={this.onClickGrade.bind(this, 2)}>Hard</button>
+                  <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Very Hard</button>
+                </> :
+                <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
               }
-
-              return <span key={l} style={style}>{l}</span>
-            })}
-          </h1>
-          <div id="definition-list">
-            {this.currentEntry.definitions.map((d, i) =>
-              <h2><span>{d.partOfSpeech}</span><span style={this.showingAnswer ? {} : { color: 'transparent', userSelect: 'none' }}> {d.definition}</span></h2>
-            )}
-          </div>
-          <div id="buttons">
-            {this.showingAnswer ?
-              <>
-                <button class="grade-0" onClick={this.onClickGrade.bind(this, 0)}>Very Easy</button>
-                <button class="grade-1" onClick={this.onClickGrade.bind(this, 1)}>Easy</button>
-                <button class="grade-2" onClick={this.onClickGrade.bind(this, 2)}>Hard</button>
-                <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Very Hard</button>
-              </> :
-              <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
-            }
-          </div>
-          <div>{this.deck.newCount} - {this.deck.reviewCount} - {this.deck.practiceCount}</div>
+            </div>
+            <div>{this.deck.newCount} - {this.deck.reviewCount} - {this.deck.practiceCount}</div>
+          </> : null}
         </div>
       </Host>
     );
