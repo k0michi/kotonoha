@@ -54,7 +54,7 @@ export class Store extends EventEmitter {
   }
 }
 
-export enum AttemptType {
+export enum Step {
   New, Review, Practice
 }
 
@@ -87,7 +87,7 @@ export class Deck extends EventEmitter {
 
     for (const attempt of this.attempts) {
       this.updateAttemptDate(attempt.entryID, attempt.gradedAt);
-      this.incrementAttemptCount(attempt.entryID, attempt.type);
+      this.incrementAttemptCount(attempt.entryID, attempt.step);
     }
 
     this.date = new Date();
@@ -106,17 +106,17 @@ export class Deck extends EventEmitter {
     }
   }
 
-  incrementAttemptCount(entryID, type) {
+  incrementAttemptCount(entryID, step) {
     this.attemptCounts[entryID]++;
 
-    switch (type) {
-      case AttemptType.New:
+    switch (step) {
+      case Step.New:
         this.newCount++;
         break;
-      case AttemptType.Review:
+      case Step.Review:
         this.reviewCount++;
         break;
-      case AttemptType.Practice:
+      case Step.Practice:
         this.practiceCount++;
         break;
     }
@@ -148,15 +148,15 @@ export class Deck extends EventEmitter {
   }
 
   getNewCards() {
-    return this.entries.filter((e => this.getType(e.id) == AttemptType.New).bind(this));
+    return this.entries.filter((e => this.getStep(e.id) == Step.New).bind(this));
   }
 
   getReviewCards() {
-    return this.entries.filter((e => this.getType(e.id) == AttemptType.Review).bind(this));
+    return this.entries.filter((e => this.getStep(e.id) == Step.Review).bind(this));
   }
 
   getPracticeCards() {
-    return this.entries.filter((e => this.getType(e.id) == AttemptType.Practice).bind(this));
+    return this.entries.filter((e => this.getStep(e.id) == Step.Practice).bind(this));
   }
 
   getScore(entryID: number) {
@@ -167,16 +167,16 @@ export class Deck extends EventEmitter {
     this.scores[entryID] = score;
   }
 
-  getType(entryID: number): AttemptType {
+  getStep(entryID: number): Step {
     const now = new Date();
 
     if (this.attemptCounts[entryID] == 0) {
-      return AttemptType.New;
+      return Step.New;
     } else {
       if (this.getDueDate(entryID) < now) {
-        return AttemptType.Review;
+        return Step.Review;
       } else {
-        return AttemptType.Practice;
+        return Step.Practice;
       }
     }
   }
@@ -184,8 +184,8 @@ export class Deck extends EventEmitter {
   startAttempt(entryID: number) {
     const id = this.attempts.length;
     const questionedAt = new Date();
-    const type = this.getType(entryID);
-    const attempt = { id, entryID, questionedAt, type };
+    const step = this.getStep(entryID);
+    const attempt = { id, entryID, questionedAt, step };
     this.ongoingAttempt = attempt;
     return id;
   }
@@ -199,7 +199,7 @@ export class Deck extends EventEmitter {
     this.ongoingAttempt.grade = grade;
     this.attempts.push(this.ongoingAttempt);
 
-    this.incrementAttemptCount(this.ongoingAttempt.entryID, this.ongoingAttempt.type);
+    this.incrementAttemptCount(this.ongoingAttempt.entryID, this.ongoingAttempt.step);
     this.updateAttemptDate(this.ongoingAttempt.entryID, this.ongoingAttempt.gradedAt);
     this.ongoingAttempt = null;
     this.emit('change');
