@@ -132,16 +132,14 @@ export class Deck extends EventEmitter {
     return Object.values(this.entries).find(e => e.word == word);
   }
 
-  addEntry(entry) {
+  addEntry(entry, date) {
     const found = this.findEntry(entry.word);
-    console.log(found)
 
     if (found == null) {
       const id = nanoid(21);
       entry.id = id;
-      const now = new Date();
-      entry.createdAt = now;
-      entry.updatedAt = now;
+      entry.createdAt = date;
+      entry.updatedAt = date;
       this.entries[id] = entry;
       this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
     } else if (!deepEqual(found.definitions, entry.definitions)) {
@@ -233,15 +231,17 @@ export class Deck extends EventEmitter {
   }
 
   importDeck(wordList) {
+    const now = new Date();
+
     for (const e of wordList.entries) {
       if (e.derivatives != null) {
         for (const d of e.derivatives) {
-          this.addEntry(d);
+          this.addEntry(d, now);
         }
       }
 
       delete e.derivatives;
-      this.addEntry(e);
+      this.addEntry(e, now);
     }
 
     this.emit('change');
