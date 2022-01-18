@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { nanoid } from 'nanoid';
+import deepEqual from 'deep-equal';
 
 const bridge = globalThis.bridge;
 
@@ -127,15 +128,33 @@ export class Deck extends EventEmitter {
     this.latestAttemptDates[entryID] = date;
   }
 
+  findEntry(word) {
+    return Object.values(this.entries).find(e => e.word == word);
+  }
+
   addEntry(entry) {
-    const id = nanoid(21);
-    entry.id = id;
-    const now = new Date();
-    entry.createdAt = now;
-    entry.updatedAt = now;
-    this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
-    this.entries[id] = entry;
+    const found = this.findEntry(entry.word);
+    console.log(found)
+
+    if (found == null) {
+      const id = nanoid(21);
+      entry.id = id;
+      const now = new Date();
+      entry.createdAt = now;
+      entry.updatedAt = now;
+      this.entries[id] = entry;
+      this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
+    } else if (!deepEqual(found.definitions, entry.definitions)) {
+      this.updateEntry(found.id, entry.definitions);
+    }
+
     this.emit('change');
+  }
+
+  updateEntry(entryID, newDefinitions) {
+    const now = new Date();
+    this.entries[entryID].definitions = newDefinitions;
+    this.entries[entryID].updatedAt = now;
   }
 
   setName(name) {
@@ -215,8 +234,10 @@ export class Deck extends EventEmitter {
 
   importDeck(wordList) {
     for (const e of wordList.entries) {
-      for (const d of e.derivatives) {
-        this.addEntry(d);
+      if (e.derivatives != null) {
+        for (const d of e.derivatives) {
+          this.addEntry(d);
+        }
       }
 
       delete e.derivatives;

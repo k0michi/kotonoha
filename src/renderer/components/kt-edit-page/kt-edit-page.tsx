@@ -38,9 +38,16 @@ export class KtEditPage {
 
     if (file != null) {
       const content = await bridge.readFile(file);
-      const tree = ewl.parse(content);
-      this.deck.importDeck(tree);
-      await store.saveDeck(this.deck);
+
+      if (file.endsWith('.json')) {
+        const tree = JSON.parse(content);
+        this.deck.importDeck(tree);
+        await store.saveDeck(this.deck);
+      } else {
+        const tree = ewl.parse(content);
+        this.deck.importDeck(tree);
+        await store.saveDeck(this.deck);
+      }
     }
   }
 
