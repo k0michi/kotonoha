@@ -61,19 +61,19 @@ export enum Step {
 export class Deck extends EventEmitter {
   id;
   name;
-  entries;
+  entries: { [key: string]: any };
   createdAt;
   attempts;
   scores;
-  latestAttemptDates = [];
-  attemptCounts = [];
+  latestAttemptDates = {};
+  attemptCounts = {};
   newCount = 0;
   reviewCount = 0;
   practiceCount = 0;
   date;
   ongoingAttempt;
 
-  constructor(id, name, entries = [], createdAt = new Date(), attempts = [], scores = []) {
+  constructor(id, name, entries = {}, createdAt = new Date(), attempts = [], scores = {}) {
     super();
     this.id = id;
     this.name = name;
@@ -82,8 +82,9 @@ export class Deck extends EventEmitter {
     this.attempts = attempts;
     this.scores = scores;
 
-    this.attemptCounts.length = this.entries.length;
-    this.attemptCounts.fill(0);
+    for (const entry of Object.values(this.entries)) {
+      this.attemptCounts[entry.id] = 0;
+    }
 
     for (const attempt of this.attempts) {
       this.updateAttemptDate(attempt.entryID, attempt.gradedAt);
@@ -127,10 +128,10 @@ export class Deck extends EventEmitter {
   }
 
   addEntry(entry) {
-    const id = this.entries.length;
+    const id = nanoid(21);
     entry.id = id;
     this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
-    this.entries.push(entry);
+    this.entries[id] = entry;
     this.emit('change');
   }
 
@@ -148,26 +149,26 @@ export class Deck extends EventEmitter {
   }
 
   getNewCards() {
-    return this.entries.filter((e => this.getStep(e.id) == Step.New).bind(this));
+    return Object.values(this.entries).filter((e => this.getStep(e.id) == Step.New).bind(this));
   }
 
   getReviewCards() {
-    return this.entries.filter((e => this.getStep(e.id) == Step.Review).bind(this));
+    return Object.values(this.entries).filter((e => this.getStep(e.id) == Step.Review).bind(this));
   }
 
   getPracticeCards() {
-    return this.entries.filter((e => this.getStep(e.id) == Step.Practice).bind(this));
+    return Object.values(this.entries).filter((e => this.getStep(e.id) == Step.Practice).bind(this));
   }
 
-  getScore(entryID: number) {
+  getScore(entryID: string) {
     return this.scores[entryID];
   }
 
-  setScore(entryID: number, score) {
+  setScore(entryID: string, score) {
     this.scores[entryID] = score;
   }
 
-  getStep(entryID: number): Step {
+  getStep(entryID: string): Step {
     const now = new Date();
 
     if (this.attemptCounts[entryID] == 0) {
@@ -181,7 +182,7 @@ export class Deck extends EventEmitter {
     }
   }
 
-  startAttempt(entryID: number) {
+  startAttempt(entryID: string) {
     const id = this.attempts.length;
     const questionedAt = new Date();
     const step = this.getStep(entryID);
@@ -222,7 +223,7 @@ export class Deck extends EventEmitter {
 
 export interface Attempt {
   id: number;
-  entryID: number;
+  entryID: string;
   grade?: number;
   questionedAt: Date;
   answeredAt?: Date;
@@ -230,7 +231,7 @@ export interface Attempt {
 }
 
 export interface Score {
-  entryID: number;
+  entryID: string;
   repetitions: number;
   easeFactor: number;
   interval: number;

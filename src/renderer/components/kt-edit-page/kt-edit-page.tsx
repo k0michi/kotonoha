@@ -13,7 +13,7 @@ export class KtEditPage {
   @Prop() history: RouterHistory;
   @Prop() match: MatchResults;
   deck: Deck;
-  @State() entries;
+  @State() entries: { [key: string]: any };
 
   update() {
     this.entries = this.deck.entries;
@@ -59,7 +59,7 @@ export class KtEditPage {
         <span>Name:</span><input type="text" onChange={this.onChangeName.bind(this)} value={this.deck.name} />
         <button onClick={this.onClickImport.bind(this)}>Import</button>
         <ul>
-          {this.entries.map(e =>
+          {Object.values(this.entries).map(e =>
             <>
               <li key={e.word}>{e.word}</li>
               <ul>
