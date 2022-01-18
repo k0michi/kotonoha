@@ -39,16 +39,7 @@ export class KtEditPage {
     if (file != null) {
       const content = await bridge.readFile(file);
       const tree = ewl.parse(content);
-
-      for (const e of tree.entries) {
-        for (const d of e.derivatives) {
-          this.deck.addEntry(d);
-        }
-
-        delete e.derivatives;
-        this.deck.addEntry(e);
-      }
-
+      this.deck.importDeck(tree)
       await store.saveDeck(this.deck);
     }
   }

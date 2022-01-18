@@ -210,6 +210,17 @@ export class Deck extends EventEmitter {
     this.attempts.push(attempt);
   }
 
+  importDeck(wordList) {
+    for (const e of wordList.entries) {
+      for (const d of e.derivatives) {
+        this.addEntry(d);
+      }
+
+      delete e.derivatives;
+      this.addEntry(e);
+    }
+  }
+
   static fromJSON(json) {
     const parsed = parseJSON(json);
     return new Deck(parsed.id, parsed.name, parsed.entries, parsed.createdAt, parsed.attempts, parsed.scores);
