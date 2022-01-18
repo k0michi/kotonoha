@@ -130,6 +130,9 @@ export class Deck extends EventEmitter {
   addEntry(entry) {
     const id = nanoid(21);
     entry.id = id;
+    const now = new Date();
+    entry.createdAt = now;
+    entry.updatedAt = now;
     this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
     this.entries[id] = entry;
     this.emit('change');
@@ -219,6 +222,8 @@ export class Deck extends EventEmitter {
       delete e.derivatives;
       this.addEntry(e);
     }
+
+    this.emit('change');
   }
 
   static fromJSON(json) {

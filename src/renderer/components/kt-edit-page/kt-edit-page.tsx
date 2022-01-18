@@ -16,7 +16,7 @@ export class KtEditPage {
   @State() entries: { [key: string]: any };
 
   update() {
-    this.entries = this.deck.entries;
+    this.entries = { ...this.deck.entries };
   }
 
   componentWillLoad() {
@@ -39,7 +39,7 @@ export class KtEditPage {
     if (file != null) {
       const content = await bridge.readFile(file);
       const tree = ewl.parse(content);
-      this.deck.importDeck(tree)
+      this.deck.importDeck(tree);
       await store.saveDeck(this.deck);
     }
   }
