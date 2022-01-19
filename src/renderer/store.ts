@@ -145,16 +145,15 @@ export class Deck extends EventEmitter {
       this.entries[id] = entry;
       this.setScore(entry.id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
     } else if (!deepEqual(found.definitions, entry.definitions)) {
-      this.updateEntry(found.id, entry.definitions);
+      this.updateEntry(found.id, entry.definitions, date);
     }
 
     this.emit('change');
   }
 
-  updateEntry(entryID, newDefinitions) {
-    const now = new Date();
+  updateEntry(entryID, newDefinitions, date) {
     this.entries[entryID].definitions = newDefinitions;
-    this.entries[entryID].updatedAt = now;
+    this.entries[entryID].updatedAt = date;
   }
 
   setName(name) {
