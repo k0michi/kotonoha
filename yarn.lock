@@ -6547,11 +6547,11 @@ __metadata:
     html-webpack-plugin: ^5.5.0
     jest: ^26.6.3
     jest-cli: ^26.6.3
-    nanoid: ^3.1.32
     puppeteer: ^10.0.0
     redux: ^4.1.2
     style-loader: ^3.3.1
     typescript: ^4.5.4
+    ulid: ^2.3.0
     webpack: ^5.64.4
     webpack-cli: ^4.9.1
     webpack-dev-server: ^4.6.0
@@ -7009,7 +7009,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.1.30, nanoid@npm:^3.1.32":
+"nanoid@npm:^3.1.30":
   version: 3.1.32
   resolution: "nanoid@npm:3.1.32"
   bin:
@@ -9352,6 +9352,15 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 2e488dde7d2c4a2fa2e79cf2470600f8ce81bc0563c276b72df8ff412d74456ae532ba824650ae936ce207440c79720ddcfaa25e3cb4477572b8534fa4e34d49
+  languageName: node
+  linkType: hard
+
+"ulid@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "ulid@npm:2.3.0"
+  bin:
+    ulid: ./bin/cli.js
+  checksum: d6dbf253fdc189f60fe2829d934ee5447b3dab62d05449a2e0fe89670d77087dd6eba4f844a69f9ffdb01384ec6fd97bdd9be638fc67d593569a45e8969f1e69
   languageName: node
   linkType: hard
 
