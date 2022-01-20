@@ -29,8 +29,13 @@ export class KtStudyPage {
     if (this.isPractice) {
       this.entries = this.deck.getPracticeCards();
     } else {
-      this.entries = this.deck.getNewCards();
-      this.entries = this.entries.slice(0, DAILY_MAX);
+      const newCards = this.deck.getNewCards();
+      this.entries = [];
+
+      for (let i = 0; i < DAILY_MAX && newCards.length > 0; i++) {
+        this.entries.push(newCards.splice(utils.random(0, newCards.length), 1));
+      }
+
       this.entries = this.entries.concat(this.deck.getReviewCards());
 
       if (this.entries.length == 0) {
