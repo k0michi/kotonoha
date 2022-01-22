@@ -1,8 +1,6 @@
 import { Component, Host, h, State, Prop } from '@stencil/core';
 import { RouterHistory } from '@stencil/router';
-import { store, Deck } from '../../store';
-
-const bridge = globalThis.bridge;
+import { store, Deck } from '../../model';
 
 @Component({
   tag: 'kt-index-page',
@@ -20,7 +18,6 @@ export class KtIndexPage {
   }
 
   async componentWillLoad() {
-    await store.initialize();
     this.updateDecks();
 
     store.on('change', (() => {

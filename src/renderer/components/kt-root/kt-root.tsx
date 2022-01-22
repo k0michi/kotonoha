@@ -1,9 +1,14 @@
 import { Component, h, Host } from '@stencil/core';
+import { store } from '../../model';
 
 @Component({
   tag: 'kt-root'
 })
 export class KtRoot {
+  async componentWillLoad() {
+    await store.initialize();
+  }
+
   render() {
     return (
       <Host>

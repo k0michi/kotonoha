@@ -22,3 +22,15 @@ export function normalizeEnglishWord(word) {
 
   return value;
 }
+
+const timestampExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+export function parseJSON(json) {
+  return JSON.parse(json, (key, value) => {
+    if (typeof value == 'string' && timestampExp.test(value)) {
+      return new Date(value);
+    } else {
+      return value;
+    }
+  });
+}

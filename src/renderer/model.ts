@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { monotonicFactory } from 'ulid'
 import deepEqual from 'deep-equal';
+import * as utils from './utils';
 
 const ulid = monotonicFactory();
 
@@ -39,7 +40,6 @@ export class Store extends EventEmitter {
   }
 
   async loadDeck(file) {
-    const id = bridge.path.basename(file, bridge.path.extname(file));
     const content = await bridge.readFile(file);
     const deck = Deck.fromJSON(content);
     return deck;
@@ -57,23 +57,20 @@ export class Store extends EventEmitter {
   }
 }
 
-export enum Step {
-  New, Review, Practice
-}
-
 export class Deck extends EventEmitter {
-  id;
-  name;
-  entries: { [key: string]: any };
-  createdAt;
-  attempts;
-  scores;
+  id: string;
+  name: string;
+  entries?: { [key: string]: Entry };
+  createdAt: Date;
+  attempts: Attempt[];
+  scores: { [key: string]: Score };
+
   latestAttemptDates = {};
   attemptCounts = {};
   newCount = 0;
   reviewCount = 0;
   practiceCount = 0;
-  date;
+  lastStudyDate;
   ongoingAttempt;
 
   constructor(id, name, entries = {}, createdAt = new Date(), attempts = [], scores = {}) {
@@ -90,27 +87,27 @@ export class Deck extends EventEmitter {
     }
 
     for (const attempt of this.attempts) {
-      this.updateAttemptDate(attempt.entryID, attempt.gradedAt);
-      this.incrementAttemptCount(attempt.entryID, attempt.step);
+      this.setAttemptDate(attempt.entryID, attempt.gradedAt);
+      this.addAttemptCount(attempt.entryID, attempt.step);
     }
 
-    this.date = new Date();
+    this.lastStudyDate = new Date();
   }
 
-  updateDayCount() {
+  initializeDailyCount() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (today > this.date) {
+    if (today > this.lastStudyDate) {
       this.newCount = 0;
       this.reviewCount = 0;
       this.practiceCount = 0;
-      this.date = new Date();
+      this.lastStudyDate = new Date();
       this.emit('change');
     }
   }
 
-  incrementAttemptCount(entryID, step) {
+  addAttemptCount(entryID, step) {
     this.attemptCounts[entryID]++;
 
     switch (step) {
@@ -126,7 +123,7 @@ export class Deck extends EventEmitter {
     }
   }
 
-  updateAttemptDate(entryID, date) {
+  setAttemptDate(entryID, date) {
     this.latestAttemptDates[entryID] = date;
   }
 
@@ -221,8 +218,8 @@ export class Deck extends EventEmitter {
     this.ongoingAttempt.grade = grade;
     this.attempts.push(this.ongoingAttempt);
 
-    this.incrementAttemptCount(this.ongoingAttempt.entryID, this.ongoingAttempt.step);
-    this.updateAttemptDate(this.ongoingAttempt.entryID, this.ongoingAttempt.gradedAt);
+    this.addAttemptCount(this.ongoingAttempt.entryID, this.ongoingAttempt.step);
+    this.setAttemptDate(this.ongoingAttempt.entryID, this.ongoingAttempt.gradedAt);
     this.ongoingAttempt = null;
     this.emit('change');
   }
@@ -249,7 +246,7 @@ export class Deck extends EventEmitter {
   }
 
   static fromJSON(json) {
-    const parsed = parseJSON(json);
+    const parsed = utils.parseJSON(json);
     return new Deck(parsed.id, parsed.name, parsed.entries, parsed.createdAt, parsed.attempts, parsed.scores);
   }
 
@@ -259,9 +256,27 @@ export class Deck extends EventEmitter {
   }
 }
 
+export enum Step {
+  New, Review, Practice
+}
+
+export interface Entry {
+  id: string;
+  word: string;
+  definitions: Definition[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Definition {
+  partOfSpeech: string;
+  definition: string;
+}
+
 export interface Attempt {
   id: number;
   entryID: string;
+  step: number;
   grade?: number;
   questionedAt: Date;
   answeredAt?: Date;
@@ -269,22 +284,10 @@ export interface Attempt {
 }
 
 export interface Score {
-  entryID: string;
+  id: string;
   repetitions: number;
   easeFactor: number;
   interval: number;
-}
-
-const timestampExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-
-function parseJSON(json) {
-  return JSON.parse(json, (key, value) => {
-    if (typeof value == 'string' && timestampExp.test(value)) {
-      return new Date(value);
-    } else {
-      return value;
-    }
-  });
 }
 
 export const store = new Store();

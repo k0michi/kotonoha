@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop, State, Listen, Fragment } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
-import { store, Deck, Attempt } from '../../store';
+import { store, Deck, Attempt } from '../../model';
 import * as scheduler from '../../scheduler';
 import * as utils from '../../utils';
 
@@ -24,7 +24,7 @@ export class KtStudyPage {
   componentWillLoad() {
     this.isPractice = this.history.location.query.practice == "true" ?? false;
     this.deck = store.getDeck(this.match.params.deckID);
-    this.deck.updateDayCount();
+    this.deck.initializeDailyCount();
 
     if (this.isPractice) {
       this.entries = this.deck.getPracticeCards();
@@ -52,7 +52,7 @@ export class KtStudyPage {
     }
 
     if (this.currentEntry == null) {
-      this.history.push(`/`, {});
+      this.quit();
     }
   }
 
