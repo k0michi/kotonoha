@@ -33,7 +33,7 @@ export class KtStudyPage {
       this.entries = [];
 
       for (let i = 0; i < DAILY_MAX && newCards.length > 0; i++) {
-        this.entries.push(newCards.splice(utils.random(0, newCards.length), 1));
+        this.entries.push(...newCards.splice(utils.random(0, newCards.length), 1));
       }
 
       this.entries = this.entries.concat(this.deck.getReviewCards());
@@ -80,7 +80,7 @@ export class KtStudyPage {
     }
   }
 
-  async showAnswer() {
+  showAnswer() {
     if (this.typedLetters == this.currentEntry.word.length) {
       this.showingAnswer = true;
       this.deck.answerAttempt();
@@ -104,7 +104,7 @@ export class KtStudyPage {
       }
 
       if (e.code == 'Enter') {
-        await this.showAnswer();
+        this.showAnswer();
       }
     }
   }
