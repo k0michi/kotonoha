@@ -69,7 +69,6 @@ export class KtStudyPage {
       store.setScore(this.currentEntry.id, newScore);
     }
 
-    await store.saveCurrentDeck();
     this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
 
     if (this.entries.length == 0) {
@@ -80,6 +79,8 @@ export class KtStudyPage {
       this.showingAnswer = false;
       this.attemptID = store.startAttempt(this.currentEntry.id, QuestionMode.Meaning);
     }
+
+    await store.saveCurrentDeck();
   }
 
   showAnswer() {
