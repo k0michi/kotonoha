@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop, State, Listen, Fragment } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
-import { store, Deck, Attempt } from '../../model';
+import { store, Deck, Attempt, QuestionMode } from '../../model';
 import * as scheduler from '../../scheduler';
 import * as utils from '../../utils';
 
@@ -48,7 +48,7 @@ export class KtStudyPage {
 
   componentDidRender() {
     if (this.attemptID == null) {
-      this.attemptID = store.startAttempt(this.currentEntry.id);
+      this.attemptID = store.startAttempt(this.currentEntry.id, QuestionMode.Meaning);
     }
 
     if (this.currentEntry == null) {
@@ -78,7 +78,7 @@ export class KtStudyPage {
       this.currentEntry = this.entries[utils.random(0, this.entries.length)];
       this.typedLetters = 0;
       this.showingAnswer = false;
-      this.attemptID = store.startAttempt(this.currentEntry.id);
+      this.attemptID = store.startAttempt(this.currentEntry.id, QuestionMode.Meaning);
     }
   }
 

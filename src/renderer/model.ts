@@ -288,11 +288,11 @@ export class Store extends StoreBase<StoreState> {
     return this.state.deck.scores[entryID];
   }
 
-  startAttempt(entryID: string) {
+  startAttempt(entryID: string, mode: QuestionMode) {
     const id = this.state.deck.attempts.length;
     const questionedAt = new Date();
     const step = this.getStep(entryID);
-    const attempt = { id, entryID, questionedAt, step };
+    const attempt = { id, entryID, questionedAt, step, mode };
 
     this.setState(produce(this.state, draft => {
       draft.deckData.ongoingAttempt = attempt;
@@ -347,10 +347,6 @@ export interface Deck {
   scores: { [key: string]: Score };
 }
 
-export enum Step {
-  New, Review, Practice
-}
-
 export interface Entry {
   id: string;
   word: string;
@@ -379,6 +375,14 @@ export interface Score {
   repetitions: number;
   easeFactor: number;
   interval: number;
+}
+
+export enum Step {
+  New, Review, Practice
+}
+
+export enum QuestionMode {
+  Meaning, Spell
 }
 
 export const store = new Store();
