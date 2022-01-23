@@ -63,9 +63,11 @@ export class KtStudyPage {
   async gradeWord(grade) {
     this.deck.gradeAttempt(grade);
 
-    const currentScore = this.deck.getScore(this.currentEntry.id);
-    const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
-    this.deck.setScore(this.currentEntry.id, newScore);
+    if (!this.isPractice) {
+      const currentScore = this.deck.getScore(this.currentEntry.id);
+      const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
+      this.deck.setScore(this.currentEntry.id, newScore);
+    }
 
     await store.saveDeck(this.deck);
     this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
