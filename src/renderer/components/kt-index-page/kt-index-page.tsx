@@ -8,26 +8,20 @@ import { store, Deck } from '../../model';
 })
 export class KtIndexPage {
   @Prop() history: RouterHistory;
-  @State() decks: any[];
-
-  updateDecks() {
-    const decks = store.getDecks();
-    this.decks = Object.entries(decks).map(([_, value]) => {
-      return { id: (value as any).id, name: (value as any).name };
-    });
-  }
+  @State() deckIndex: { [key: string]: Deck } = {};
 
   async componentWillLoad() {
-    this.updateDecks();
+    await store.initializeIndex();
+    this.mapState();
+    store.subscribe(this.mapState.bind(this));
+  }
 
-    store.on('change', (() => {
-      this.updateDecks();
-    }).bind(this));
+  mapState() {
+    this.deckIndex = store.state.deckIndex;
   }
 
   async onClickNew(e: MouseEvent) {
-    const deck = store.newDeck('Untitled');
-    await store.saveDeck(deck);
+    store.createNewDeck('Untitled');
   }
 
   onClickStudy(deck, e) {
@@ -50,7 +44,7 @@ export class KtIndexPage {
       <Host>
         <button onClick={this.onClickNew.bind(this)}>New</button>
         <ul>
-          {this.decks.map(v =>
+          {Object.values(this.deckIndex).map(v =>
             <li>
               {v.name}
               <button onClick={this.onClickStudy.bind(this, v)}>Study</button>

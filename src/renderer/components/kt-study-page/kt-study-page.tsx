@@ -13,7 +13,6 @@ const DAILY_MAX = 20;
 export class KtStudyPage {
   @Prop() history: RouterHistory;
   @Prop() match: MatchResults;
-  deck: Deck;
   entries;
   attemptID: number;
   @State() isPractice;
@@ -21,25 +20,26 @@ export class KtStudyPage {
   @State() showingAnswer = false;
   @State() typedLetters = 0;
 
-  componentWillLoad() {
+  async componentWillLoad() {
     this.isPractice = this.history.location.query.practice == "true" ?? false;
-    this.deck = store.getDeck(this.match.params.deckID);
-    this.deck.initializeDailyCount();
+
+    await store.initializeDeck(this.match.params.deckID);
+    store.initializeDailyCount();
 
     if (this.isPractice) {
-      this.entries = this.deck.getPracticeCards();
+      this.entries = store.getPracticeCards();
     } else {
-      const newCards = this.deck.getNewCards();
+      const newCards = store.getNewCards();
       this.entries = [];
 
       for (let i = 0; i < DAILY_MAX && newCards.length > 0; i++) {
         this.entries.push(...newCards.splice(utils.random(0, newCards.length), 1));
       }
 
-      this.entries = this.entries.concat(this.deck.getReviewCards());
+      this.entries = this.entries.concat(store.getReviewCards());
 
       if (this.entries.length == 0) {
-        this.entries = this.deck.getNewCards();
+        this.entries = store.getNewCards();
       }
     }
 
@@ -48,7 +48,7 @@ export class KtStudyPage {
 
   componentDidRender() {
     if (this.attemptID == null) {
-      this.attemptID = this.deck.startAttempt(this.currentEntry.id);
+      this.attemptID = store.startAttempt(this.currentEntry.id);
     }
 
     if (this.currentEntry == null) {
@@ -61,15 +61,15 @@ export class KtStudyPage {
   }
 
   async gradeWord(grade) {
-    this.deck.gradeAttempt(grade);
+    store.gradeAttempt(grade);
 
     if (!this.isPractice) {
-      const currentScore = this.deck.getScore(this.currentEntry.id);
+      const currentScore = store.getScore(this.currentEntry.id);
       const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
-      this.deck.setScore(this.currentEntry.id, newScore);
+      store.setScore(this.currentEntry.id, newScore);
     }
 
-    await store.saveDeck(this.deck);
+    await store.saveCurrentDeck();
     this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
 
     if (this.entries.length == 0) {
@@ -78,14 +78,14 @@ export class KtStudyPage {
       this.currentEntry = this.entries[utils.random(0, this.entries.length)];
       this.typedLetters = 0;
       this.showingAnswer = false;
-      this.attemptID = this.deck.startAttempt(this.currentEntry.id);
+      this.attemptID = store.startAttempt(this.currentEntry.id);
     }
   }
 
   showAnswer() {
     if (this.typedLetters == this.currentEntry.word.length) {
       this.showingAnswer = true;
-      this.deck.answerAttempt();
+      store.answerAttempt();
     }
   }
 
@@ -157,7 +157,7 @@ export class KtStudyPage {
                 <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
               }
             </div>
-            <div>{this.deck.newCount} - {this.deck.reviewCount} - {this.deck.practiceCount}</div>
+            <div>{store.state.deckData.newCount} - {store.state.deckData.reviewCount} - {store.state.deckData.practiceCount}</div>
           </> : null}
         </div>
       </Host>

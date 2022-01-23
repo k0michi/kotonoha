@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop, State, Fragment } from '@stencil/core';
 import { MatchResults, RouterHistory } from '@stencil/router';
-import { Deck, store } from '../../model';
+import { Deck, Entry, store } from '../../model';
 import * as ewl from '../../ewl';
 
 const bridge = globalThis.bridge;
@@ -12,25 +12,21 @@ const bridge = globalThis.bridge;
 export class KtEditPage {
   @Prop() history: RouterHistory;
   @Prop() match: MatchResults;
-  deck: Deck;
-  @State() entries: { [key: string]: any };
+  @State() entries: { [key: string]: Entry };
 
-  update() {
-    this.entries = { ...this.deck.entries };
+  async componentWillLoad() {
+    await store.initializeDeck(this.match.params.deckID);
+    this.mapState();
+    store.subscribe(this.mapState.bind(this));
   }
 
-  componentWillLoad() {
-    this.deck = store.getDeck(this.match.params.deckID);
-    this.update();
-
-    this.deck.on('change', (() => {
-      this.update();
-    }).bind(this));
+  mapState() {
+    this.entries = store.state.deck.entries;
   }
 
   async onChangeName(e) {
-    this.deck.setName(e.target.value);
-    await store.saveDeck(this.deck);
+    store.setName(e.target.value);
+    await store.saveCurrentDeck();
   }
 
   async onClickImport(e) {
@@ -41,12 +37,12 @@ export class KtEditPage {
 
       if (file.endsWith('.json')) {
         const tree = JSON.parse(content);
-        this.deck.importDeck(tree);
-        await store.saveDeck(this.deck);
+        store.importDeck(tree);
+        await store.saveCurrentDeck();
       } else {
         const tree = ewl.parse(content);
-        this.deck.importDeck(tree);
-        await store.saveDeck(this.deck);
+        store.importDeck(tree);
+        await store.saveCurrentDeck();
       }
     }
   }
@@ -54,7 +50,7 @@ export class KtEditPage {
   render() {
     return (
       <Host>
-        <span>Name:</span><input type="text" onChange={this.onChangeName.bind(this)} value={this.deck.name} />
+        <span>Name:</span><input type="text" onChange={this.onChangeName.bind(this)} value={store.state.deck.name} />
         <button onClick={this.onClickImport.bind(this)}>Import</button>
         <ul>
           {Object.values(this.entries).map(e =>
