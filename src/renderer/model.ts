@@ -92,7 +92,7 @@ export class Store extends StoreBase<StoreState> {
     };
 
     for (const entry of Object.values(deck.entries)) {
-      deckData[entry.id] = 0;
+      deckData.attemptCounts[entry.id] = 0;
     }
 
     for (const attempt of deck.attempts) {
