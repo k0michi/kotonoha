@@ -2,10 +2,13 @@ import { monotonicFactory } from 'ulid'
 import deepEqual from 'deep-equal';
 import { produce } from 'immer';
 import * as utils from './utils';
+import * as scheduler from './scheduler';
 
 const ulid = monotonicFactory();
 
 const bridge = globalThis.bridge;
+
+const DailyMax = 20;
 
 export class StoreBase<T> {
   listeners = [];
@@ -36,6 +39,14 @@ export interface StoreState {
   deckIndex: { [key: string]: Deck };
   deck: Deck;
   deckData: DeckData;
+  study: StudyState;
+}
+
+export interface StudyState {
+  isPractice;
+  currentEntryID;
+  showingAnswer;
+  typedLetters;
 }
 
 export interface DeckData {
@@ -50,13 +61,17 @@ export interface DeckData {
 
 export class Store extends StoreBase<StoreState> {
   config;
+  entryQueue: string[];
 
   constructor() {
     super({
       deckIndex: {},
       deck: null,
-      deckData: null
+      deckData: null,
+      study: null
     });
+
+    this.entryQueue = [];
   }
 
   async initializeIndex() {
@@ -117,6 +132,34 @@ export class Store extends StoreBase<StoreState> {
       draft.deck = deck;
       draft.deckData = deckData;
     }));
+  }
+
+  initializeEntryQueue(isPractice) {
+    this.setState(produce(this.state, draft => {
+      draft.study = {
+        isPractice,
+        currentEntryID: null,
+        showingAnswer: false,
+        typedLetters: 0
+      };
+    }));
+
+    if (isPractice) {
+      this.entryQueue = this.getPracticeCards();
+    } else {
+      const newCards = this.getNewCards();
+      this.entryQueue = [];
+
+      for (let i = 0; i < DailyMax && newCards.length > 0; i++) {
+        this.entryQueue.push(...newCards.splice(utils.random(0, newCards.length), 1));
+      }
+
+      this.entryQueue = this.entryQueue.concat(this.getReviewCards());
+
+      if (this.entryQueue.length == 0) {
+        this.entryQueue = this.getNewCards();
+      }
+    }
   }
 
   createNewDeck(name) {
@@ -273,22 +316,33 @@ export class Store extends StoreBase<StoreState> {
   }
 
   getNewCards() {
-    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.New).bind(this));
+    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.New).bind(this)).map(e=>e.id);
   }
 
   getReviewCards() {
-    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Review).bind(this));
+    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Review).bind(this)).map(e=>e.id);
   }
 
   getPracticeCards() {
-    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Practice).bind(this));
+    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Practice).bind(this)).map(e=>e.id);
   }
 
   getScore(entryID) {
     return this.state.deck.scores[entryID];
   }
 
-  startAttempt(entryID: string, mode: QuestionMode) {
+  addTypedLetters() {
+    this.setState(produce(this.state, draft => {
+      draft.study.typedLetters++;
+    }));
+  }
+
+  queueRemaining() {
+    return this.entryQueue.length;
+  }
+
+  startAttempt(mode: QuestionMode) {
+    const entryID = this.entryQueue.shift();
     const id = this.state.deck.attempts.length;
     const questionedAt = new Date();
     const step = this.getStep(entryID);
@@ -296,26 +350,46 @@ export class Store extends StoreBase<StoreState> {
 
     this.setState(produce(this.state, draft => {
       draft.deckData.ongoingAttempt = attempt;
+      draft.study.currentEntryID = entryID;
+      draft.study.showingAnswer = false;
+      draft.study.typedLetters = 0;
     }));
 
     return id;
   }
 
   answerAttempt() {
+    if (this.state.deckData.ongoingAttempt == null) {
+      return;
+    }
+    
     this.setState(produce(this.state, draft => {
       draft.deckData.ongoingAttempt.answeredAt = new Date();
+      draft.study.showingAnswer = true;
     }));
   }
 
   gradeAttempt(grade: number) {
+    if (this.state.deckData.ongoingAttempt == null) {
+      return;
+    }
+
     this.setState(produce(this.state, draft => {
       draft.deckData.ongoingAttempt.gradedAt = new Date();
       draft.deckData.ongoingAttempt.grade = grade;
       draft.deck.attempts.push(draft.deckData.ongoingAttempt);
     }));
 
-    this.addAttemptCount(this.state.deckData.ongoingAttempt.entryID, this.state.deckData.ongoingAttempt.step);
-    this.setAttemptDate(this.state.deckData.ongoingAttempt.entryID, this.state.deckData.ongoingAttempt.gradedAt);
+    const entryID = this.state.deckData.ongoingAttempt.entryID;
+
+    this.addAttemptCount(entryID, this.state.deckData.ongoingAttempt.step);
+    this.setAttemptDate(entryID, this.state.deckData.ongoingAttempt.gradedAt);
+
+    if (!this.state.study.isPractice) {
+      const currentScore = this.getScore(entryID);
+      const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
+      this.setScore(entryID, newScore);
+    }
 
     this.setState(produce(this.state, draft => {
       draft.deckData.ongoingAttempt = null;

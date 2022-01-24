@@ -1,10 +1,7 @@
 import { Component, Host, h, Prop, State, Listen, Fragment } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
-import { store, Deck, Attempt, QuestionMode } from '../../model';
-import * as scheduler from '../../scheduler';
+import { store, QuestionMode } from '../../model';
 import * as utils from '../../utils';
-
-const DAILY_MAX = 20;
 
 @Component({
   tag: 'kt-study-page',
@@ -13,79 +10,55 @@ const DAILY_MAX = 20;
 export class KtStudyPage {
   @Prop() history: RouterHistory;
   @Prop() match: MatchResults;
-  entries;
-  attemptID: number;
   @State() isPractice;
   @State() currentEntry;
   @State() showingAnswer = false;
   @State() typedLetters = 0;
+  @State() newCount = 0;
+  @State() reviewCount = 0;
+  @State() practiceCount = 0;
 
   async componentWillLoad() {
     this.isPractice = this.history.location.query.practice == "true" ?? false;
 
     await store.initializeDeck(this.match.params.deckID);
-    store.initializeDailyCount();
-
-    if (this.isPractice) {
-      this.entries = store.getPracticeCards();
-    } else {
-      const newCards = store.getNewCards();
-      this.entries = [];
-
-      for (let i = 0; i < DAILY_MAX && newCards.length > 0; i++) {
-        this.entries.push(...newCards.splice(utils.random(0, newCards.length), 1));
-      }
-
-      this.entries = this.entries.concat(store.getReviewCards());
-
-      if (this.entries.length == 0) {
-        this.entries = store.getNewCards();
-      }
-    }
-
-    this.currentEntry = this.entries[utils.random(0, this.entries.length)];
+    store.initializeEntryQueue(this.isPractice);
+    // store.initializeDailyCount();
+    this.mapState();
+    store.subscribe(this.mapState.bind(this));
+    this.nextEntry();
   }
 
-  componentDidRender() {
-    if (this.attemptID == null) {
-      this.attemptID = store.startAttempt(this.currentEntry.id, QuestionMode.Meaning);
-    }
-
-    if (this.currentEntry == null) {
-      this.quit();
-    }
+  mapState() {
+    this.isPractice = store.state.study.isPractice;
+    this.currentEntry = store.state.study.currentEntryID != null ? store.state.deck.entries[store.state.study.currentEntryID] : null;
+    this.showingAnswer = store.state.study.showingAnswer;
+    this.typedLetters = store.state.study.typedLetters;
+    this.newCount = store.state.deckData.newCount;
+    this.reviewCount = store.state.deckData.reviewCount;
+    this.practiceCount = store.state.deckData.practiceCount;
   }
 
   quit() {
     this.history.push(`/`, {});
   }
 
+  nextEntry() {
+    if (store.queueRemaining() > 0) {
+      store.startAttempt(QuestionMode.Meaning);
+    } else {
+      this.quit();
+    }
+  }
+
   async gradeWord(grade) {
     store.gradeAttempt(grade);
-
-    if (!this.isPractice) {
-      const currentScore = store.getScore(this.currentEntry.id);
-      const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
-      store.setScore(this.currentEntry.id, newScore);
-    }
-
-    this.entries.splice(this.entries.indexOf(this.currentEntry), 1);
-
-    if (this.entries.length == 0) {
-      this.quit();
-    } else {
-      this.currentEntry = this.entries[utils.random(0, this.entries.length)];
-      this.typedLetters = 0;
-      this.showingAnswer = false;
-      this.attemptID = store.startAttempt(this.currentEntry.id, QuestionMode.Meaning);
-    }
-
     await store.saveCurrentDeck();
+    this.nextEntry();
   }
 
   showAnswer() {
     if (this.typedLetters == this.currentEntry.word.length) {
-      this.showingAnswer = true;
       store.answerAttempt();
     }
   }
@@ -103,7 +76,7 @@ export class KtStudyPage {
       }
     } else {
       if (e.key == this.currentEntry.word[this.typedLetters]) {
-        this.typedLetters++;
+        store.addTypedLetters();
       }
 
       if (e.code == 'Enter') {
@@ -112,8 +85,8 @@ export class KtStudyPage {
     }
   }
 
-  async onClickShow() {
-    await this.showAnswer();
+  onClickShow() {
+    this.showAnswer();
   }
 
   async onClickGrade(grade) {
@@ -128,38 +101,36 @@ export class KtStudyPage {
     return (
       <Host>
         <div id="container">
-          {this.currentEntry != null ? <>
-            <h1 id="headword">
-              {letters.map((l, i) => {
-                let style;
+          <h1 id="headword">
+            {letters.map((l, i) => {
+              let style;
 
-                if (i == this.typedLetters) {
-                  style = { textDecoration: 'underline' };
-                } else if (i < this.typedLetters) {
-                  style = { color: `hsl(${hue}, 100%, 50%)` };
-                }
-
-                return <span key={l} style={style}>{l}</span>
-              })}
-            </h1>
-            <div id="definition-list">
-              {this.currentEntry.definitions.map((d, i) =>
-                <h2><span>{d.partOfSpeech}</span><span class={{ "hide-answer": !this.showingAnswer }}> {d.definition}</span></h2>
-              )}
-            </div>
-            <div id="buttons">
-              {this.showingAnswer ?
-                <>
-                  <button class="grade-0" onClick={this.onClickGrade.bind(this, 0)}>Easy</button>
-                  <button class="grade-1" onClick={this.onClickGrade.bind(this, 1)}>Good</button>
-                  <button class="grade-2" onClick={this.onClickGrade.bind(this, 2)}>Hard</button>
-                  <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Impossible</button>
-                </> :
-                <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
+              if (i == this.typedLetters) {
+                style = { textDecoration: 'underline' };
+              } else if (i < this.typedLetters) {
+                style = { color: `hsl(${hue}, 100%, 50%)` };
               }
-            </div>
-            <div>{store.state.deckData.newCount} - {store.state.deckData.reviewCount} - {store.state.deckData.practiceCount}</div>
-          </> : null}
+
+              return <span key={l} style={style}>{l}</span>
+            })}
+          </h1>
+          <div id="definition-list">
+            {this.currentEntry.definitions.map((d, i) =>
+              <h2><span>{d.partOfSpeech}</span><span class={{ "hide-answer": !this.showingAnswer }}> {d.definition}</span></h2>
+            )}
+          </div>
+          <div id="buttons">
+            {this.showingAnswer ?
+              <>
+                <button class="grade-0" onClick={this.onClickGrade.bind(this, 0)}>Easy</button>
+                <button class="grade-1" onClick={this.onClickGrade.bind(this, 1)}>Good</button>
+                <button class="grade-2" onClick={this.onClickGrade.bind(this, 2)}>Hard</button>
+                <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Impossible</button>
+              </> :
+              <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
+            }
+          </div>
+          <div>{this.newCount} - {this.reviewCount} - {this.practiceCount}</div>
         </div>
       </Host>
     );
