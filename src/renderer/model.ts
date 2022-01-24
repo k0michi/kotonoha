@@ -244,10 +244,8 @@ export class Store extends StoreBase<StoreState> {
     }));
   }
 
-  setAttemptDate(entryID, date) {
+  setDueDate(entryID, date) {
     this.setState(produce(this.state, draft => {
-      const score = draft.deck.scores[entryID];
-      draft.deckData.dueDates[entryID] = this.calculateDueDate(date, score.interval);
     }));
   }
 
@@ -377,8 +375,10 @@ export class Store extends StoreBase<StoreState> {
       return;
     }
 
+    const gradedAt = new Date();
+
     this.setState(produce(this.state, draft => {
-      draft.deckData.ongoingAttempt.gradedAt = new Date();
+      draft.deckData.ongoingAttempt.gradedAt = gradedAt;
       draft.deckData.ongoingAttempt.grade = grade;
       draft.deck.attempts.push(draft.deckData.ongoingAttempt);
     }));
@@ -388,13 +388,11 @@ export class Store extends StoreBase<StoreState> {
     this.addAttemptCount(entryID, this.state.deckData.ongoingAttempt.step);
 
     if (this.state.deckData.ongoingAttempt.step != Step.Practice) {
-      this.setAttemptDate(entryID, this.state.deckData.ongoingAttempt.gradedAt);
-    }
-
-    if (!this.state.study.isPractice) {
       const currentScore = this.getScore(entryID);
       const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
       this.setScore(entryID, newScore);
+      const dueDate = this.calculateDueDate(gradedAt, newScore.interval);
+      this.setDueDate(entryID, dueDate);
     }
 
     this.setState(produce(this.state, draft => {
