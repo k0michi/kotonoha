@@ -11,7 +11,7 @@ export class KtStatsPage {
   @Prop() match: MatchResults;
   @State() entries: { [key: string]: Entry };
   @State() attemptCounts;
-  @State() latestAttemptDates;
+  @State() dueDates;
 
   async componentWillLoad() {
     await store.initializeDeck(this.match.params.deckID);
@@ -22,7 +22,7 @@ export class KtStatsPage {
   mapState() {
     this.entries = store.state.deck.entries;
     this.attemptCounts = store.state.deckData.attemptCounts;
-    this.latestAttemptDates = store.state.deckData.latestAttemptDates;
+    this.dueDates = store.state.deckData.dueDates;
   }
 
   render() {
@@ -47,7 +47,7 @@ export class KtStatsPage {
                 {this.attemptCounts[e.id]}
               </td>
               <td>
-                {this.latestAttemptDates[e.id]?.toLocaleString()}
+                {this.dueDates[e.id]?.toLocaleString()}
               </td>
             </tr>
           )}

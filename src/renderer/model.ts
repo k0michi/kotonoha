@@ -50,7 +50,7 @@ export interface StudyState {
 }
 
 export interface DeckData {
-  latestAttemptDates: { [key: string]: Date };
+  dueDates: { [key: string]: Date };
   attemptCounts: { [key: string]: number };
   newCount: number;
   reviewCount: number;
@@ -97,7 +97,7 @@ export class Store extends StoreBase<StoreState> {
     this.config = await bridge.getConfig();
     const deck = await this.loadDeckFromID(id);
     const deckData = {
-      latestAttemptDates: {},
+      dueDates: {},
       attemptCounts: {},
       newCount: 0,
       reviewCount: 0,
@@ -125,7 +125,10 @@ export class Store extends StoreBase<StoreState> {
           break;
       }
 
-      deckData.latestAttemptDates[attempt.entryID] = attempt.gradedAt;
+      if (attempt.step != Step.Practice) {
+        const score = deck.scores[attempt.entryID];
+        deckData.dueDates[attempt.entryID] = this.calculateDueDate(attempt.gradedAt, score.interval);
+      }
     }
 
     this.setState(produce(this.state, draft => {
@@ -243,10 +246,11 @@ export class Store extends StoreBase<StoreState> {
 
   setAttemptDate(entryID, date) {
     this.setState(produce(this.state, draft => {
-      draft.deckData.latestAttemptDates[entryID] = date;
+      const score = draft.deck.scores[entryID];
+      draft.deckData.dueDates[entryID] = this.calculateDueDate(date, score.interval);
     }));
   }
-  
+
   findEntry(word) {
     return Object.values(this.state.deck.entries).find(e => e.word == word)?.id;
   }
@@ -271,7 +275,7 @@ export class Store extends StoreBase<StoreState> {
       }));
 
       this.setScore(id, { repetitions: 0, easeFactor: 2.5, interval: 1, id });
-    } else{
+    } else {
       const found = this.state.deck.entries[foundID];
 
       if (!deepEqual(found.definitions, entry.definitions)) {
@@ -293,10 +297,9 @@ export class Store extends StoreBase<StoreState> {
     }));
   }
 
-  getDueDate(entryID) {
-    const score = this.state.deck.scores[entryID];
-    const dueDate = new Date(this.state.deckData.latestAttemptDates[entryID]);
-    dueDate.setDate(dueDate.getDate() + score.interval);
+  calculateDueDate(lastDate, interval) {
+    const dueDate = new Date(lastDate);
+    dueDate.setDate(dueDate.getDate() + interval);
     dueDate.setHours(0, 0, 0, 0);
     return dueDate;
   }
@@ -307,7 +310,7 @@ export class Store extends StoreBase<StoreState> {
     if (this.state.deckData.attemptCounts[entryID] == 0) {
       return Step.New;
     } else {
-      if (this.getDueDate(entryID) < now) {
+      if (this.state.deckData.dueDates[entryID] < now) {
         return Step.Review;
       } else {
         return Step.Practice;
@@ -316,15 +319,15 @@ export class Store extends StoreBase<StoreState> {
   }
 
   getNewCards() {
-    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.New).bind(this)).map(e=>e.id);
+    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.New).bind(this)).map(e => e.id);
   }
 
   getReviewCards() {
-    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Review).bind(this)).map(e=>e.id);
+    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Review).bind(this)).map(e => e.id);
   }
 
   getPracticeCards() {
-    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Practice).bind(this)).map(e=>e.id);
+    return Object.values(this.state.deck.entries).filter((e => this.getStep(e.id) == Step.Practice).bind(this)).map(e => e.id);
   }
 
   getScore(entryID) {
@@ -362,7 +365,7 @@ export class Store extends StoreBase<StoreState> {
     if (this.state.deckData.ongoingAttempt == null) {
       return;
     }
-    
+
     this.setState(produce(this.state, draft => {
       draft.deckData.ongoingAttempt.answeredAt = new Date();
       draft.study.showingAnswer = true;
@@ -383,7 +386,10 @@ export class Store extends StoreBase<StoreState> {
     const entryID = this.state.deckData.ongoingAttempt.entryID;
 
     this.addAttemptCount(entryID, this.state.deckData.ongoingAttempt.step);
-    this.setAttemptDate(entryID, this.state.deckData.ongoingAttempt.gradedAt);
+
+    if (this.state.deckData.ongoingAttempt.step != Step.Practice) {
+      this.setAttemptDate(entryID, this.state.deckData.ongoingAttempt.gradedAt);
+    }
 
     if (!this.state.study.isPractice) {
       const currentScore = this.getScore(entryID);
