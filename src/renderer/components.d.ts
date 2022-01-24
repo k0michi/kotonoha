@@ -16,6 +16,10 @@ export namespace Components {
     }
     interface KtRoot {
     }
+    interface KtStatsPage {
+        "history": RouterHistory;
+        "match": MatchResults;
+    }
     interface KtStudyPage {
         "history": RouterHistory;
         "match": MatchResults;
@@ -40,6 +44,12 @@ declare global {
         prototype: HTMLKtRootElement;
         new (): HTMLKtRootElement;
     };
+    interface HTMLKtStatsPageElement extends Components.KtStatsPage, HTMLStencilElement {
+    }
+    var HTMLKtStatsPageElement: {
+        prototype: HTMLKtStatsPageElement;
+        new (): HTMLKtStatsPageElement;
+    };
     interface HTMLKtStudyPageElement extends Components.KtStudyPage, HTMLStencilElement {
     }
     var HTMLKtStudyPageElement: {
@@ -50,6 +60,7 @@ declare global {
         "kt-edit-page": HTMLKtEditPageElement;
         "kt-index-page": HTMLKtIndexPageElement;
         "kt-root": HTMLKtRootElement;
+        "kt-stats-page": HTMLKtStatsPageElement;
         "kt-study-page": HTMLKtStudyPageElement;
     }
 }
@@ -63,6 +74,10 @@ declare namespace LocalJSX {
     }
     interface KtRoot {
     }
+    interface KtStatsPage {
+        "history"?: RouterHistory;
+        "match"?: MatchResults;
+    }
     interface KtStudyPage {
         "history"?: RouterHistory;
         "match"?: MatchResults;
@@ -71,6 +86,7 @@ declare namespace LocalJSX {
         "kt-edit-page": KtEditPage;
         "kt-index-page": KtIndexPage;
         "kt-root": KtRoot;
+        "kt-stats-page": KtStatsPage;
         "kt-study-page": KtStudyPage;
     }
 }
@@ -81,6 +97,7 @@ declare module "@stencil/core" {
             "kt-edit-page": LocalJSX.KtEditPage & JSXBase.HTMLAttributes<HTMLKtEditPageElement>;
             "kt-index-page": LocalJSX.KtIndexPage & JSXBase.HTMLAttributes<HTMLKtIndexPageElement>;
             "kt-root": LocalJSX.KtRoot & JSXBase.HTMLAttributes<HTMLKtRootElement>;
+            "kt-stats-page": LocalJSX.KtStatsPage & JSXBase.HTMLAttributes<HTMLKtStatsPageElement>;
             "kt-study-page": LocalJSX.KtStudyPage & JSXBase.HTMLAttributes<HTMLKtStudyPageElement>;
         }
     }

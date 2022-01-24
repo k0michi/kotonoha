@@ -39,6 +39,11 @@ export class KtIndexPage {
     this.history.push(`/edit/${deck.id}`, {});
   }
 
+  onClickStats(deck, e) {
+    e.preventDefault();
+    this.history.push(`/stats/${deck.id}`, {});
+  }
+
   render() {
     return (
       <Host>
@@ -50,6 +55,7 @@ export class KtIndexPage {
               <button onClick={this.onClickStudy.bind(this, v)}>Study</button>
               <button onClick={this.onClickPractice.bind(this, v)}>Practice</button>
               <button onClick={this.onClickEdit.bind(this, v)}>Edit</button>
+              <button onClick={this.onClickStats.bind(this, v)}>Stats</button>
             </li>
           )}
         </ul>
