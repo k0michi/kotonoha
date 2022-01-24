@@ -2,6 +2,11 @@
   display: block;
 }
 
+.hide-answer {
+  color: transparent;
+  user-select: none;
+}
+
 #buttons {
   display: flex;
   width: 600px;

@@ -144,7 +144,7 @@ export class KtStudyPage {
             </h1>
             <div id="definition-list">
               {this.currentEntry.definitions.map((d, i) =>
-                <h2><span>{d.partOfSpeech}</span><span style={this.showingAnswer ? {} : { color: 'transparent', userSelect: 'none' }}> {d.definition}</span></h2>
+                <h2><span>{d.partOfSpeech}</span><span class={{ "hide-answer": !this.showingAnswer }}> {d.definition}</span></h2>
               )}
             </div>
             <div id="buttons">
