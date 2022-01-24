@@ -244,8 +244,9 @@ export class Store extends StoreBase<StoreState> {
     }));
   }
 
-  setDueDate(entryID, date) {
+  setDueDate(entryID, dueDate) {
     this.setState(produce(this.state, draft => {
+      draft.deckData.dueDates[entryID] = dueDate;
     }));
   }
 
