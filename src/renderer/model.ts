@@ -127,18 +127,16 @@ export class Store extends StoreBase<StoreState> {
     if (isPractice) {
       this.entryQueue = this.getPracticeCards();
     } else {
-      const newCards = this.getNewCards();
-      this.entryQueue = [];
-
-      for (let i = 0; i < DailyMax && newCards.length > 0; i++) {
-        this.entryQueue.push(...newCards.splice(utils.random(0, newCards.length), 1));
-      }
-
+      this.entryQueue = utils.selectRandom(this.getNewCards(), DailyMax);
+      console.log(this.entryQueue)
       this.entryQueue = this.entryQueue.concat(this.getReviewCards());
+      console.log(this.entryQueue)
 
       if (this.entryQueue.length == 0) {
         this.entryQueue = this.getNewCards();
       }
+
+      utils.shuffle(this.entryQueue);
     }
   }
 
