@@ -13,6 +13,7 @@ export class KtRoot {
             <stencil-route url="/study/:deckID" component="kt-study-page" />
             <stencil-route url="/edit/:deckID" component="kt-edit-page" />
             <stencil-route url="/stats/:deckID" component="kt-stats-page" />
+            <stencil-route url="/history/:deckID" component="kt-history-page" />
           </stencil-route-switch>
         </stencil-router>
       </Host>

@@ -1,6 +1,7 @@
 import { Component, Host, h, Prop, State } from '@stencil/core';
 import { MatchResults, RouterHistory } from '@stencil/router';
-import { Entry, store } from '../../model';
+import { store } from '../../model';
+import { Entry } from '../../interfaces';
 
 @Component({
   tag: 'kt-stats-page',
@@ -21,8 +22,8 @@ export class KtStatsPage {
 
   mapState() {
     this.entries = store.state.deck.entries;
-    this.attemptCounts = store.state.deckData.attemptCounts;
-    this.dueDates = store.state.deckData.dueDates;
+    this.attemptCounts = store.state.deckExtra.attemptCounts;
+    this.dueDates = store.state.deckExtra.dueDates;
   }
 
   render() {

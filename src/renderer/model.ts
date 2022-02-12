@@ -3,6 +3,8 @@ import deepEqual from 'deep-equal';
 import { produce } from 'immer';
 import * as utils from './utils';
 import * as scheduler from './scheduler';
+import StoreBase from './store-base';
+import { Attempt, Deck, QuestionMode, Step } from './interfaces';
 
 const ulid = monotonicFactory();
 
@@ -10,35 +12,10 @@ const bridge = globalThis.bridge;
 
 const DailyMax = 20;
 
-export class StoreBase<T> {
-  listeners = [];
-  state: T = null;
-
-  constructor(initialState: T) {
-    this.state = initialState;
-  }
-
-  subscribe(listener) {
-    this.listeners.push(listener);
-  }
-
-  unsubscribe(listener) {
-    this.listeners.splice(this.listeners.indexOf(listener), 1);
-  }
-
-  setState(newState: T) {
-    this.state = newState;
-
-    for (const listener of this.listeners) {
-      listener();
-    }
-  }
-}
-
 export interface StoreState {
   deckIndex: { [key: string]: Deck };
   deck: Deck;
-  deckData: DeckData;
+  deckExtra: DeckExtra;
   study: StudyState;
 }
 
@@ -49,7 +26,7 @@ export interface StudyState {
   typedLetters;
 }
 
-export interface DeckData {
+export interface DeckExtra {
   dueDates: { [key: string]: Date };
   attemptCounts: { [key: string]: number };
   newCount: number;
@@ -67,7 +44,7 @@ export class Store extends StoreBase<StoreState> {
     super({
       deckIndex: {},
       deck: null,
-      deckData: null,
+      deckExtra: null,
       study: null
     });
 
@@ -133,7 +110,7 @@ export class Store extends StoreBase<StoreState> {
 
     this.setState(produce(this.state, draft => {
       draft.deck = deck;
-      draft.deckData = deckData;
+      draft.deckExtra = deckData;
     }));
   }
 
@@ -228,17 +205,17 @@ export class Store extends StoreBase<StoreState> {
 
   addAttemptCount(entryID, step) {
     this.setState(produce(this.state, draft => {
-      draft.deckData.attemptCounts[entryID]++;
+      draft.deckExtra.attemptCounts[entryID]++;
 
       switch (step) {
         case Step.New:
-          draft.deckData.newCount++;
+          draft.deckExtra.newCount++;
           break;
         case Step.Review:
-          draft.deckData.reviewCount++;
+          draft.deckExtra.reviewCount++;
           break;
         case Step.Practice:
-          draft.deckData.practiceCount++;
+          draft.deckExtra.practiceCount++;
           break;
       }
     }));
@@ -246,7 +223,7 @@ export class Store extends StoreBase<StoreState> {
 
   setDueDate(entryID, dueDate) {
     this.setState(produce(this.state, draft => {
-      draft.deckData.dueDates[entryID] = dueDate;
+      draft.deckExtra.dueDates[entryID] = dueDate;
     }));
   }
 
@@ -306,10 +283,10 @@ export class Store extends StoreBase<StoreState> {
   getStep(entryID: string): Step {
     const now = new Date();
 
-    if (this.state.deckData.attemptCounts[entryID] == 0) {
+    if (this.state.deckExtra.attemptCounts[entryID] == 0) {
       return Step.New;
     } else {
-      if (this.state.deckData.dueDates[entryID] < now) {
+      if (this.state.deckExtra.dueDates[entryID] < now) {
         return Step.Review;
       } else {
         return Step.Practice;
@@ -351,7 +328,7 @@ export class Store extends StoreBase<StoreState> {
     const attempt = { id, entryID, questionedAt, step, mode };
 
     this.setState(produce(this.state, draft => {
-      draft.deckData.ongoingAttempt = attempt;
+      draft.deckExtra.ongoingAttempt = attempt;
       draft.study.currentEntryID = entryID;
       draft.study.showingAnswer = false;
       draft.study.typedLetters = 0;
@@ -361,34 +338,34 @@ export class Store extends StoreBase<StoreState> {
   }
 
   answerAttempt() {
-    if (this.state.deckData.ongoingAttempt == null) {
+    if (this.state.deckExtra.ongoingAttempt == null) {
       return;
     }
 
     this.setState(produce(this.state, draft => {
-      draft.deckData.ongoingAttempt.answeredAt = new Date();
+      draft.deckExtra.ongoingAttempt.answeredAt = new Date();
       draft.study.showingAnswer = true;
     }));
   }
 
   gradeAttempt(grade: number) {
-    if (this.state.deckData.ongoingAttempt == null) {
+    if (this.state.deckExtra.ongoingAttempt == null) {
       return;
     }
 
     const gradedAt = new Date();
 
     this.setState(produce(this.state, draft => {
-      draft.deckData.ongoingAttempt.gradedAt = gradedAt;
-      draft.deckData.ongoingAttempt.grade = grade;
-      draft.deck.attempts.push(draft.deckData.ongoingAttempt);
+      draft.deckExtra.ongoingAttempt.gradedAt = gradedAt;
+      draft.deckExtra.ongoingAttempt.grade = grade;
+      draft.deck.attempts.push(draft.deckExtra.ongoingAttempt);
     }));
 
-    const entryID = this.state.deckData.ongoingAttempt.entryID;
+    const entryID = this.state.deckExtra.ongoingAttempt.entryID;
 
-    this.addAttemptCount(entryID, this.state.deckData.ongoingAttempt.step);
+    this.addAttemptCount(entryID, this.state.deckExtra.ongoingAttempt.step);
 
-    if (this.state.deckData.ongoingAttempt.step != Step.Practice) {
+    if (this.state.deckExtra.ongoingAttempt.step != Step.Practice) {
       const currentScore = this.getScore(entryID);
       const newScore = scheduler.sm2((3 - grade) * (5 / 3), currentScore);
       this.setScore(entryID, newScore);
@@ -397,7 +374,7 @@ export class Store extends StoreBase<StoreState> {
     }
 
     this.setState(produce(this.state, draft => {
-      draft.deckData.ongoingAttempt = null;
+      draft.deckExtra.ongoingAttempt = null;
     }));
   }
 
@@ -415,53 +392,6 @@ export class Store extends StoreBase<StoreState> {
       this.addEntry(e, now);
     }
   }
-}
-
-export interface Deck {
-  id: string;
-  name: string;
-  entries?: { [key: string]: Entry };
-  createdAt: Date;
-  attempts: Attempt[];
-  scores: { [key: string]: Score };
-}
-
-export interface Entry {
-  id: string;
-  word: string;
-  definitions: Definition[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Definition {
-  partOfSpeech: string;
-  definition: string;
-}
-
-export interface Attempt {
-  id: number;
-  entryID: string;
-  step: number;
-  grade?: number;
-  questionedAt: Date;
-  answeredAt?: Date;
-  gradedAt?: Date;
-}
-
-export interface Score {
-  id: string;
-  repetitions: number;
-  easeFactor: number;
-  interval: number;
-}
-
-export enum Step {
-  New, Review, Practice
-}
-
-export enum QuestionMode {
-  Meaning, Spell
 }
 
 export const store = new Store();

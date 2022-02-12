@@ -1,3 +1,7 @@
 :host {
   display: block;
 }
+
+stencil-route-link {
+  margin-left: 1em;
+}

@@ -1,6 +1,7 @@
 import { Component, Host, h, State, Prop } from '@stencil/core';
 import { RouterHistory } from '@stencil/router';
-import { store, Deck } from '../../model';
+import { store } from '../../model';
+import { Deck } from '../../interfaces';
 
 @Component({
   tag: 'kt-index-page',
@@ -20,28 +21,8 @@ export class KtIndexPage {
     this.deckIndex = store.state.deckIndex;
   }
 
-  async onClickNew(e: MouseEvent) {
+  onClickNew(e: MouseEvent) {
     store.createNewDeck('Untitled');
-  }
-
-  onClickStudy(deck, e) {
-    e.preventDefault();
-    this.history.push(`/study/${deck.id}`, {});
-  }
-
-  onClickPractice(deck, e) {
-    e.preventDefault();
-    this.history.push(`/study/${deck.id}?practice=true`, {});
-  }
-
-  onClickEdit(deck, e) {
-    e.preventDefault();
-    this.history.push(`/edit/${deck.id}`, {});
-  }
-
-  onClickStats(deck, e) {
-    e.preventDefault();
-    this.history.push(`/stats/${deck.id}`, {});
   }
 
   render() {
@@ -52,10 +33,11 @@ export class KtIndexPage {
           {Object.values(this.deckIndex).map(v =>
             <li>
               {v.name}
-              <button onClick={this.onClickStudy.bind(this, v)}>Study</button>
-              <button onClick={this.onClickPractice.bind(this, v)}>Practice</button>
-              <button onClick={this.onClickEdit.bind(this, v)}>Edit</button>
-              <button onClick={this.onClickStats.bind(this, v)}>Stats</button>
+              <stencil-route-link url={`/study/${v.id}`}>Study</stencil-route-link>
+              <stencil-route-link url={`/study/${v.id}?practice=true`}>Practice</stencil-route-link>
+              <stencil-route-link url={`/edit/${v.id}`}>Edit</stencil-route-link>
+              <stencil-route-link url={`/stats/${v.id}`}>Stats</stencil-route-link>
+              <stencil-route-link url={`/history/${v.id}`}>History</stencil-route-link>
             </li>
           )}
         </ul>

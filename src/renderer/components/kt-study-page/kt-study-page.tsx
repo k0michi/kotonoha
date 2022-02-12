@@ -1,6 +1,7 @@
 import { Component, Host, h, Prop, State, Listen, Fragment } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
-import { store, QuestionMode } from '../../model';
+import { store } from '../../model';
+import { QuestionMode } from '../../interfaces';
 import * as utils from '../../utils';
 
 @Component({
@@ -34,9 +35,9 @@ export class KtStudyPage {
     this.currentEntry = store.state.study.currentEntryID != null ? store.state.deck.entries[store.state.study.currentEntryID] : null;
     this.showingAnswer = store.state.study.showingAnswer;
     this.typedLetters = store.state.study.typedLetters;
-    this.newCount = store.state.deckData.newCount;
-    this.reviewCount = store.state.deckData.reviewCount;
-    this.practiceCount = store.state.deckData.practiceCount;
+    this.newCount = store.state.deckExtra.newCount;
+    this.reviewCount = store.state.deckExtra.reviewCount;
+    this.practiceCount = store.state.deckExtra.practiceCount;
   }
 
   quit() {

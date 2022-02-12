@@ -11,6 +11,10 @@ export namespace Components {
         "history": RouterHistory;
         "match": MatchResults;
     }
+    interface KtHistoryPage {
+        "history": RouterHistory;
+        "match": MatchResults;
+    }
     interface KtIndexPage {
         "history": RouterHistory;
     }
@@ -31,6 +35,12 @@ declare global {
     var HTMLKtEditPageElement: {
         prototype: HTMLKtEditPageElement;
         new (): HTMLKtEditPageElement;
+    };
+    interface HTMLKtHistoryPageElement extends Components.KtHistoryPage, HTMLStencilElement {
+    }
+    var HTMLKtHistoryPageElement: {
+        prototype: HTMLKtHistoryPageElement;
+        new (): HTMLKtHistoryPageElement;
     };
     interface HTMLKtIndexPageElement extends Components.KtIndexPage, HTMLStencilElement {
     }
@@ -58,6 +68,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "kt-edit-page": HTMLKtEditPageElement;
+        "kt-history-page": HTMLKtHistoryPageElement;
         "kt-index-page": HTMLKtIndexPageElement;
         "kt-root": HTMLKtRootElement;
         "kt-stats-page": HTMLKtStatsPageElement;
@@ -66,6 +77,10 @@ declare global {
 }
 declare namespace LocalJSX {
     interface KtEditPage {
+        "history"?: RouterHistory;
+        "match"?: MatchResults;
+    }
+    interface KtHistoryPage {
         "history"?: RouterHistory;
         "match"?: MatchResults;
     }
@@ -84,6 +99,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "kt-edit-page": KtEditPage;
+        "kt-history-page": KtHistoryPage;
         "kt-index-page": KtIndexPage;
         "kt-root": KtRoot;
         "kt-stats-page": KtStatsPage;
@@ -95,6 +111,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "kt-edit-page": LocalJSX.KtEditPage & JSXBase.HTMLAttributes<HTMLKtEditPageElement>;
+            "kt-history-page": LocalJSX.KtHistoryPage & JSXBase.HTMLAttributes<HTMLKtHistoryPageElement>;
             "kt-index-page": LocalJSX.KtIndexPage & JSXBase.HTMLAttributes<HTMLKtIndexPageElement>;
             "kt-root": LocalJSX.KtRoot & JSXBase.HTMLAttributes<HTMLKtRootElement>;
             "kt-stats-page": LocalJSX.KtStatsPage & JSXBase.HTMLAttributes<HTMLKtStatsPageElement>;
