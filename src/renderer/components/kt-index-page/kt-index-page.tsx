@@ -17,6 +17,10 @@ export class KtIndexPage {
     store.subscribe(this.mapState.bind(this));
   }
 
+  disconnectedCallback() {
+    store.unsubscribe(this.mapState.bind(this));
+  }
+
   mapState() {
     this.deckIndex = store.state.deckIndex;
   }

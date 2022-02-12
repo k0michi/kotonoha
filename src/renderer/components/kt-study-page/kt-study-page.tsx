@@ -1,7 +1,7 @@
 import { Component, Host, h, Prop, State, Listen, Fragment } from '@stencil/core';
 import { RouterHistory, MatchResults } from '@stencil/router';
 import { store } from '../../model';
-import { QuestionMode } from '../../interfaces';
+import { Entry, QuestionMode } from '../../interfaces';
 import * as utils from '../../utils';
 
 @Component({
@@ -11,8 +11,8 @@ import * as utils from '../../utils';
 export class KtStudyPage {
   @Prop() history: RouterHistory;
   @Prop() match: MatchResults;
-  @State() isPractice;
-  @State() currentEntry;
+  @State() isPractice: boolean;
+  @State() currentEntry: Entry;
   @State() showingAnswer = false;
   @State() typedLetters = 0;
   @State() newCount = 0;
@@ -28,6 +28,10 @@ export class KtStudyPage {
     this.mapState();
     store.subscribe(this.mapState.bind(this));
     this.nextEntry();
+  }
+
+  disconnectedCallback() {
+    store.unsubscribe(this.mapState.bind(this));
   }
 
   mapState() {

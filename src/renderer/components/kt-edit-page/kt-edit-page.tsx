@@ -21,6 +21,10 @@ export class KtEditPage {
     store.subscribe(this.mapState.bind(this));
   }
 
+  disconnectedCallback() {
+    store.unsubscribe(this.mapState.bind(this));
+  }
+
   mapState() {
     this.entries = store.state.deck.entries;
   }

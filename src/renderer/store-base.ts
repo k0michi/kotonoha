@@ -7,6 +7,7 @@ export default class StoreBase<T> {
   }
 
   subscribe(listener) {
+    console.log(this.listeners)
     this.listeners.push(listener);
   }
 

@@ -20,6 +20,10 @@ export class KtStatsPage {
     store.subscribe(this.mapState.bind(this));
   }
 
+  disconnectedCallback() {
+    store.unsubscribe(this.mapState.bind(this));
+  }
+
   mapState() {
     this.entries = store.state.deck.entries;
     this.attemptCounts = store.state.deckExtra.attemptCounts;

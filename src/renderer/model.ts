@@ -20,10 +20,10 @@ export interface StoreState {
 }
 
 export interface StudyState {
-  isPractice;
-  currentEntryID;
-  showingAnswer;
-  typedLetters;
+  isPractice: boolean;
+  currentEntryID: string;
+  showingAnswer: boolean;
+  typedLetters: number;
 }
 
 export interface DeckExtra {
@@ -128,16 +128,14 @@ export class Store extends StoreBase<StoreState> {
       this.entryQueue = this.getPracticeCards();
     } else {
       this.entryQueue = utils.selectRandom(this.getNewCards(), DailyMax);
-      console.log(this.entryQueue)
       this.entryQueue = this.entryQueue.concat(this.getReviewCards());
-      console.log(this.entryQueue)
 
       if (this.entryQueue.length == 0) {
         this.entryQueue = this.getNewCards();
       }
-
-      utils.shuffle(this.entryQueue);
     }
+
+    utils.shuffle(this.entryQueue);
   }
 
   createNewDeck(name) {
