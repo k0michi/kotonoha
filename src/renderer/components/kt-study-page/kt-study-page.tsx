@@ -18,6 +18,7 @@ export class KtStudyPage {
   @State() newCount = 0;
   @State() reviewCount = 0;
   @State() practiceCount = 0;
+  listener = this.mapState.bind(this);
 
   async componentWillLoad() {
     this.isPractice = this.history.location.query.practice == "true" ?? false;
@@ -26,12 +27,12 @@ export class KtStudyPage {
     store.initializeEntryQueue(this.isPractice);
     // store.initializeDailyCount();
     this.mapState();
-    store.subscribe(this.mapState.bind(this));
+    store.subscribe(this.listener);
     this.nextEntry();
   }
 
   disconnectedCallback() {
-    store.unsubscribe(this.mapState.bind(this));
+    store.unsubscribe(this.listener);
   }
 
   mapState() {

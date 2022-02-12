@@ -12,15 +12,16 @@ export class KtHistoryPage {
   @Prop() match: MatchResults;
   @State() entries: { [key: string]: Entry };
   @State() attempts: Attempt[];
+  listener = this.mapState.bind(this);
 
   async componentWillLoad() {
     await store.initializeDeck(this.match.params.deckID);
     this.mapState();
-    store.subscribe(this.mapState.bind(this));
+    store.subscribe(this.listener);
   }
 
   disconnectedCallback() {
-    store.unsubscribe(this.mapState.bind(this));
+    store.unsubscribe(this.listener);
   }
 
   mapState() {

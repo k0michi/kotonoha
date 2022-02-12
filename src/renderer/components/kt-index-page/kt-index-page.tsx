@@ -10,15 +10,16 @@ import { Deck } from '../../interfaces';
 export class KtIndexPage {
   @Prop() history: RouterHistory;
   @State() deckIndex: { [key: string]: Deck } = {};
+  listener = this.mapState.bind(this);
 
   async componentWillLoad() {
     await store.initializeIndex();
     this.mapState();
-    store.subscribe(this.mapState.bind(this));
+    store.subscribe(this.listener);
   }
 
   disconnectedCallback() {
-    store.unsubscribe(this.mapState.bind(this));
+    store.unsubscribe(this.listener);
   }
 
   mapState() {
