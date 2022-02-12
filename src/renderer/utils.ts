@@ -46,9 +46,13 @@ export function shuffle(array) {
   }
 }
 
-export function selectRandom(array, count) {
+export function selectRandom(array, max) {
   const clone = array.slice();
   shuffle(clone);
-  clone.length = count;
+
+  if (max < clone.length) {
+    clone.length = max;
+  }
+
   return clone;
 }
