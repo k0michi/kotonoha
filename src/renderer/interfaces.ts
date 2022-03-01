@@ -17,7 +17,7 @@ export interface Entry {
 
 export interface Definition {
   partOfSpeech: string;
-  definition: string;
+  gloss: string | [string];
 }
 
 export interface Attempt {

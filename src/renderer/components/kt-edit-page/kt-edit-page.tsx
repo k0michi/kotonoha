@@ -54,6 +54,7 @@ export class KtEditPage {
   }
 
   render() {
+    console.log(this.entries)
     return (
       <Host>
         <span>Name:</span><input type="text" onChange={this.onChangeName.bind(this)} value={store.state.deck.name} />
@@ -64,7 +65,7 @@ export class KtEditPage {
               <li key={e.word}>{e.word}</li>
               <ul>
                 {e.definitions.map(d =>
-                  <li>{d.partOfSpeech} {d.definition}</li>
+                  <li>{d.partOfSpeech} {Array.isArray(d.gloss) ? d.gloss.map(g => <span>{g}<br /></span>) : d.gloss}</li>
                 )}
               </ul>
             </>
