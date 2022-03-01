@@ -122,10 +122,10 @@ export class KtStudyPage {
           </h1>
           <div id="definition-list">
             {this.currentEntry.definitions.map((d, i) =>
-              <h2>
-                <span>{d.partOfSpeech}</span>
-                <span class={{ "hide-answer": !this.showingAnswer }}> {Array.isArray(d.gloss) ? d.gloss.map(g => <span>{g}<br /></span>) : d.gloss}</span>
-                </h2>
+              <div class="definition">
+                <div>{d.partOfSpeech}</div>
+                <div class={{ "hide-answer": !this.showingAnswer, "gloss": true }}>{Array.isArray(d.gloss) ? d.gloss.map(g => <>{g}<br /></>) : d.gloss}</div>
+              </div>
             )}
           </div>
           <div id="buttons">

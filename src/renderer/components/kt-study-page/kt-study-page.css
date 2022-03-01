@@ -17,6 +17,8 @@
   width: 100vw;
   height: 100vh;
   flex-direction: column;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 #container>* {
@@ -26,11 +28,11 @@
 }
 
 #container>*:first-child {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 #container>*:last-child {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 #headword {
@@ -44,6 +46,16 @@
 
 #definition-list>* {
   margin-top: 0px;
+}
+
+.definition {
+  font-size: 24px;
+  display: flex;
+  flex-direction: row;
+}
+
+.gloss {
+  margin-left: 12px;
 }
 
 #buttons {
