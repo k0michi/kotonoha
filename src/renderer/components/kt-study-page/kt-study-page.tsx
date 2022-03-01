@@ -134,7 +134,7 @@ export class KtStudyPage {
                 <button class="grade-0" onClick={this.onClickGrade.bind(this, 0)}>Easy</button>
                 <button class="grade-1" onClick={this.onClickGrade.bind(this, 1)}>Good</button>
                 <button class="grade-2" onClick={this.onClickGrade.bind(this, 2)}>Hard</button>
-                <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Impossible</button>
+                <button class="grade-3" onClick={this.onClickGrade.bind(this, 3)}>Bad</button>
               </> :
               <button class="show" disabled={!canShowAnswer} onClick={this.onClickShow.bind(this)}>Show Answer</button>
             }
