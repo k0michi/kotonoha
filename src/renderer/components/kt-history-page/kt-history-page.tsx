@@ -1,7 +1,7 @@
 import { Component, Host, h, Prop, State, Fragment } from '@stencil/core';
 import { MatchResults, RouterHistory } from '@stencil/router';
 import { store } from '../../model';
-import { Attempt, Deck, Entry } from '../../interfaces';
+import { Attempt, Deck, Entry, Step } from '../../interfaces';
 
 @Component({
   tag: 'kt-history-page',
@@ -29,17 +29,37 @@ export class KtHistoryPage {
     this.attempts = store.state.deck.attempts;
   }
 
+  stepToString(step: Step) {
+    switch (step) {
+      case Step.New:
+        return 'New';
+      case Step.Practice:
+        return 'Practice';
+      case Step.Review:
+        return 'Review';
+    }
+  }
+
   render() {
     return (
       <Host>
         <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Word</th>
+              <th>Date</th>
+              <th>Step</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
           {this.attempts.slice().reverse().map((a, i) => {
             const entry = this.entries[a.entryID];
 
             return (
               <tr>
                 <td>
-                  #{a.id}
+                  {a.id}
                 </td>
                 <td>
                   {entry.word}
@@ -48,7 +68,10 @@ export class KtHistoryPage {
                   {a.gradedAt.toLocaleString()}
                 </td>
                 <td>
-                  {a.step}
+                  {this.stepToString(a.step)}
+                </td>
+                <td>
+                  {a.grade}
                 </td>
               </tr>
             );

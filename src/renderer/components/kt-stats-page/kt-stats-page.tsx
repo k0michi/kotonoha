@@ -35,8 +35,22 @@ export class KtStatsPage {
     return (
       <Host>
         <table>
-          {Object.values(this.entries).map(e =>
+          <thead>
             <tr>
+              <th>#</th>
+              <th>Word</th>
+              <th>ID</th>
+              <th>Created at</th>
+              <th>Updated at</th>
+              <th>Attempts</th>
+              <th>Due date</th>
+            </tr>
+          </thead>
+          {Object.values(this.entries).map((e, i) =>
+            <tr>
+              <td>
+                {i}
+              </td>
               <td>
                 {e.word}
               </td>
@@ -44,10 +58,10 @@ export class KtStatsPage {
                 {e.id}
               </td>
               <td>
-                {e.updatedAt.toLocaleString()}
+                {e.createdAt.toLocaleString()}
               </td>
               <td>
-                {e.createdAt.toLocaleString()}
+                {e.updatedAt.toLocaleString()}
               </td>
               <td>
                 {this.attemptCounts[e.id]}
