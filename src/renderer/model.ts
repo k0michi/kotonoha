@@ -114,6 +114,11 @@ export class Store extends StoreBase<StoreState> {
     }));
   }
 
+  getPreviousAttempt(entryID) {
+    const attempts = this.state.deck.attempts.filter(a => a.entryID == entryID);
+    return attempts[attempts.length - 1];
+  }
+
   initializeEntryQueue(isPractice) {
     this.setState(produce(this.state, draft => {
       draft.study = {
@@ -125,7 +130,10 @@ export class Store extends StoreBase<StoreState> {
     }));
 
     if (isPractice) {
-      this.entryQueue = this.getPracticeCards();
+      this.entryQueue = this.getPracticeCards().filter(entryID => {
+        const previousAttempt = this.getPreviousAttempt(entryID);
+        return previousAttempt == null || previousAttempt.grade >= 2;
+      });
     } else {
       this.entryQueue = utils.selectRandom(this.getNewCards(), DailyMax);
       this.entryQueue = this.entryQueue.concat(this.getReviewCards());

@@ -39,7 +39,7 @@ export class KtIndexPage {
             <li>
               {v.name}
               <stencil-route-link url={`/study/${v.id}`}>Study</stencil-route-link>
-              <stencil-route-link url={`/study/${v.id}?practice=true`}>Practice</stencil-route-link>
+              <stencil-route-link url={`/study/${v.id}?practice=true`}>Try Again</stencil-route-link>
               <stencil-route-link url={`/edit/${v.id}`}>Edit</stencil-route-link>
               <stencil-route-link url={`/stats/${v.id}`}>Stats</stencil-route-link>
               <stencil-route-link url={`/history/${v.id}`}>History</stencil-route-link>
