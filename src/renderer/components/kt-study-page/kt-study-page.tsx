@@ -69,6 +69,11 @@ export class KtStudyPage {
     }
   }
 
+  compare(a, b) {
+    // Handle diacritical marks
+    return a == b || (a == 'ï' && b == 'i') || (a == 'ç' && b == 'c');
+  }
+
   @Listen('keydown', { target: 'window' })
   async handleKeyDown(e: KeyboardEvent) {
     if (e.key == 'Escape') {
@@ -81,7 +86,7 @@ export class KtStudyPage {
         await this.gradeWord(grade);
       }
     } else {
-      if (e.key == this.currentEntry.word[this.typedLetters]) {
+      if (this.compare(this.currentEntry.word[this.typedLetters], e.key)) {
         store.addTypedLetters();
       }
 
