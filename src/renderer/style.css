@@ -1,0 +1,15 @@
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color: white;
+    background-color: black;
+  }
+}
+
+a {
+  color: inherit;
+}
