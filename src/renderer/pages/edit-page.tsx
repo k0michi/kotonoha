@@ -28,11 +28,11 @@ export default function EditPage() {
       <div>Description: {deck?.head?.description}</div>
       <div>Created: {deck?.head?.created}</div>
       <ul>
-        {deck != null ?Object.values(deck.entries).map(e => <li>
+        {deck != null ? Object.values(deck.entries).map(e => <li key={e.id}>
           {e.word}
           <ul>
-            {e.senses.map(s =>
-              <li>{s.pos}. {s.usage} {s.gloss}</li>
+            {e.senses.map((s, i) =>
+              <li key={i}>{s.pos}. {s.usage} {s.gloss}</li>
             )}
           </ul>
         </li>) : null}
