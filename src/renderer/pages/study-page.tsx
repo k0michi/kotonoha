@@ -70,22 +70,24 @@ export default function StudyPage() {
   const hasAnswered = session?.answered != null;
 
   return (
-    <>
+    <div id="study-page">
       <div><Link to="/">Back</Link></div>
-      <div>{entry?.word}</div>
-      <ul>{entry?.senses.map((s, i) => <li key={i}>{s.pos}. {s.usage} <span className={hasAnswered ? '' : 'hidden'}>{s.gloss}</span></li>)}</ul>
-      {
-        hasAnswered ?
-          <div>
-            <button onClick={e => onGraded(1)}>Easy</button>
-            <button onClick={e => onGraded(2)}>Normal</button>
-            <button onClick={e => onGraded(3)}>Hard</button>
-            <button onClick={e => onGraded(4)}>Again</button>
-          </div> :
-          <button onClick={e => {
-            model.answerAttempt();
-          }}>Answer</button>
-      }
-    </>
+      <div className="headword">{entry?.word}</div>
+      <ul className="senses">{entry?.senses.map((s, i) => <li key={i}>{s.pos}. {s.usage} <span className={hasAnswered ? '' : 'hidden'}>{s.gloss}</span></li>)}</ul>
+      <div className="buttons">
+        {
+          hasAnswered ?
+            <>
+              <button onClick={e => onGraded(1)}>Easy</button>
+              <button onClick={e => onGraded(2)}>Normal</button>
+              <button onClick={e => onGraded(3)}>Hard</button>
+              <button onClick={e => onGraded(4)}>Again</button>
+            </> :
+            <button onClick={e => {
+              model.answerAttempt();
+            }}>Answer</button>
+        }
+      </div>
+    </div>
   );
 }
