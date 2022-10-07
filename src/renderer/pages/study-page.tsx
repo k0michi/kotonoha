@@ -32,9 +32,13 @@ export default function StudyPage() {
           onGraded(grade);
         }
       } else {
-        if (e.code == 'Space') {
+        if (e.code == 'Space' || e.code == 'Enter') {
           model.answerAttempt();
         }
+      }
+
+      if (e.key == 'Escape') {
+        quit();
       }
     };
 
