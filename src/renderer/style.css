@@ -13,3 +13,8 @@ html {
 a {
   color: inherit;
 }
+
+.hidden {
+  color: transparent;
+  user-select: none;
+}

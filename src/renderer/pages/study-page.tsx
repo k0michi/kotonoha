@@ -73,7 +73,7 @@ export default function StudyPage() {
     <>
       <div><Link to="/">Back</Link></div>
       <div>{entry?.word}</div>
-      <ul>{entry?.senses.map((s, i) => <li key={i}>{s.pos}. {s.usage} {hasAnswered ? s.gloss : null}</li>)}</ul>
+      <ul>{entry?.senses.map((s, i) => <li key={i}>{s.pos}. {s.usage} <span className={hasAnswered ? '' : 'hidden'}>{s.gloss}</span></li>)}</ul>
       {
         hasAnswered ?
           <div>
