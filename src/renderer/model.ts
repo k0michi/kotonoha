@@ -48,7 +48,7 @@ export interface ScoreSheetExtra {
 export default class Model {
   deckIndex = new Kyoka.Observable<DictionaryHead[]>([]);
   decks = new Kyoka.Observable<Record<string, Dictionary | undefined>>({});
-  scoreSheetsExtra = new Kyoka.Observable<Record<string, ScoreSheetExtra | undefined>>({});
+  // scoreSheetsExtra = new Kyoka.Observable<Record<string, ScoreSheetExtra | undefined>>({});
   scoreSheets = new Kyoka.Observable<Record<string, ScoreSheet | undefined>>({});
   currentSession = new Kyoka.Observable<Session | undefined>(undefined);
 
@@ -78,8 +78,8 @@ export default class Model {
   unloadDeck(id: string) {
     delete this.decks.get()[id];
     this.decks.set(this.decks.get());
-    delete this.scoreSheetsExtra.get()[id];
-    this.scoreSheetsExtra.set(this.scoreSheetsExtra.get());
+    // delete this.scoreSheetsExtra.get()[id];
+    // this.scoreSheetsExtra.set(this.scoreSheetsExtra.get());
   }
 
   async loadDeck(id: string) {
@@ -111,6 +111,7 @@ export default class Model {
     this.scoreSheets.get()[id] = parsed;
     this.scoreSheets.set(this.scoreSheets.get());
 
+    /*
     const lastAttempts: Record<string, Attempt> = {};
     const attemptCounts: Record<string, number> = {};
 
@@ -125,15 +126,30 @@ export default class Model {
 
     this.scoreSheetsExtra.get()[id] = { attemptCounts, lastAttempts };
     this.scoreSheetsExtra.set(this.scoreSheetsExtra.get());
+    */
+  }
+
+  getLastAttempt(deckID: string, entryID: string) {
+    const scoreSheet = this.scoreSheets.get()[deckID];
+    let last: Attempt | undefined;
+
+    for (const attempt of scoreSheet!.attempts) {
+      if (attempt.entryID == entryID) {
+        last = attempt;
+      }
+    }
+
+    return last;
   }
 
   getDueDate(deckID: string, entryID: string) {
-    const dueDate = this.scoreSheetsExtra.get()[deckID]?.lastAttempts[entryID]?.questioned;
+    let dueDate = this.getLastAttempt(deckID, entryID)?.questioned;
 
     if (dueDate == null) {
       return null;
     }
 
+    dueDate = new Date(dueDate.getTime());
     const interval = this.scoreSheets.get()[deckID]?.scores[entryID]?.interval!;
     dueDate.setDate(dueDate.getDate() + interval);
     dueDate.setHours(0, 0, 0, 0);
