@@ -197,6 +197,10 @@ export default class Model {
   }
 
   gradeAttempt(grade: number) {
+    if (!(grade >= 0 && grade <= 3)) {
+      throw new Error('Out of bound');
+    }
+
     const session = this.currentSession.get()!;
     const graded = new Date();
     const deckID = session.deckID;

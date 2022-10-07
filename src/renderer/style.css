@@ -68,4 +68,25 @@ a {
 .buttons>button {
   padding: 8px 16px;
   font-size: 16px;
+  border: 0px;
+}
+
+.answer {
+  background-color: #d1d1d1;
+}
+
+.grade-0 {
+  background: linear-gradient(135deg, #56A7DE, #877FEE);
+}
+
+.grade-1 {
+  background: linear-gradient(135deg, #70D97E, #9ECC00);
+}
+
+.grade-2 {
+  background: linear-gradient(135deg, #F5FF5D, #F6890B);
+}
+
+.grade-3 {
+  background: linear-gradient(135deg, #FF5A5A, #AA54FF);
 }

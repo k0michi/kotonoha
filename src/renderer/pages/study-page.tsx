@@ -78,12 +78,12 @@ export default function StudyPage() {
         {
           hasAnswered ?
             <>
-              <button onClick={e => onGraded(1)}>Easy</button>
-              <button onClick={e => onGraded(2)}>Normal</button>
-              <button onClick={e => onGraded(3)}>Hard</button>
-              <button onClick={e => onGraded(4)}>Again</button>
+              <button className='grade-0' onClick={e => onGraded(0)}>Easy</button>
+              <button className='grade-1' onClick={e => onGraded(1)}>Normal</button>
+              <button className='grade-2' onClick={e => onGraded(2)}>Hard</button>
+              <button className='grade-3' onClick={e => onGraded(3)}>Again</button>
             </> :
-            <button onClick={e => {
+            <button className='answer' onClick={e => {
               model.answerAttempt();
             }}>Answer</button>
         }
