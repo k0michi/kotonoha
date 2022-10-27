@@ -15,10 +15,10 @@ export default function IndexPage() {
 
   return (
     <>
-      <button onClick={async e => {
+      <a href='' onClick={async e => {
         await model.createNewDeck();
         await model.loadDeckIndex();
-      }}>New</button>
+      }}>New</a>
       <ul>
         {
           deckIndex.map(d => <li key={d.id}>
